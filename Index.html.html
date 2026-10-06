@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Felvan Course System</title>
+  <link rel="icon" href="https://iili.io/CYBXpR4.png">
+  <style>
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #fff; }
+    .wrap { position: fixed; inset: 0; overflow: hidden; }
+    iframe {
+  position: absolute;
+  top: -10px;                    /* tadinya -50px */
+  left: 0;
+  width: 100%;
+  height: calc(100% + 10px);     /* samakan dengan nilai top */
+  border: 0;
+}
+@media (max-width: 600px) {
+  iframe { top: -10px; height: calc(100% + 40px); }  /* tadinya 60px */
+}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <iframe id="app"
+      allow="clipboard-write; camera; microphone; geolocation; fullscreen"
+      allowfullscreen></iframe>
+  </div>
+  <script>
+    const GAS = "https://script.google.com/macros/s/AKfycbyMH2Tqm_eGNDB-V-EB6x9wMT1L59tOevuOICUpc-l-bu8bSw7BufMT1oJZrDK3hRe3kQ/exec";
+    document.getElementById("app").src = GAS + window.location.search;
+  </script>
+</body>
+</html>
