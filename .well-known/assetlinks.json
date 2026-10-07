@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "online.felvancourse.twa",
+        "sha256_cert_fingerprints": ["9A:5E:1A:C9:C7:90:BF:64:65:15:07:1B:95:26:81:3A:6B:60:2E:F1:E9:DA:CF:AC:06:D4:06:3A:63:3A:DF:5C"]
+      }
+    }]
