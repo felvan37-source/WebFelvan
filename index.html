@@ -33,6 +33,12 @@
       allow="clipboard-write; camera; microphone; geolocation; fullscreen"
       allowfullscreen></iframe>
   </div>
+
+  <!-- TAMBAHAN PWA (3): tombol install aplikasi -->
+  <button id="installBtn" style="display:none;position:fixed;bottom:16px;right:16px;z-index:9999;padding:12px 18px;border:0;border-radius:24px;background:#1a73e8;color:#fff;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:pointer">
+    Install Aplikasi
+  </button>
+
   <script>
     const GAS = "https://script.google.com/macros/s/AKfycbyMH2Tqm_eGNDB-V-EB6x9wMT1L59tOevuOICUpc-l-bu8bSw7BufMT1oJZrDK3hRe3kQ/exec";
     document.getElementById("app").src = GAS + window.location.search;
@@ -43,6 +49,26 @@
         navigator.serviceWorker.register("/sw.js");
       });
     }
+
+    // TAMBAHAN PWA (3): logika tombol install
+    let deferredPrompt;
+    const installBtn = document.getElementById("installBtn");
+    window.addEventListener("beforeinstallprompt", function (e) {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.style.display = "block";
+    });
+    installBtn.addEventListener("click", async function () {
+      installBtn.style.display = "none";
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+      }
+    });
+    window.addEventListener("appinstalled", function () {
+      installBtn.style.display = "none";
+    });
   </script>
 </body>
 </html>
