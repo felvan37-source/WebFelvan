@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Felvan Course System</title>
   <link rel="icon" href="https://iili.io/CYBXpR4.png">
+
+  <!-- TAMBAHAN PWA (1): manifest, warna tema, ikon -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1a73e8">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; background: #fff; }
     .wrap { position: fixed; inset: 0; overflow: hidden; }
@@ -30,6 +36,13 @@
   <script>
     const GAS = "https://script.google.com/macros/s/AKfycbyMH2Tqm_eGNDB-V-EB6x9wMT1L59tOevuOICUpc-l-bu8bSw7BufMT1oJZrDK3hRe3kQ/exec";
     document.getElementById("app").src = GAS + window.location.search;
+
+    // TAMBAHAN PWA (2): daftarkan service worker
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("/sw.js");
+      });
+    }
   </script>
 </body>
 </html>
