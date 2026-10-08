@@ -1,4 +1,3 @@
-// OneSignal harus dimuat paling atas
 importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");
 
 const CACHE = 'felvan-v1';
