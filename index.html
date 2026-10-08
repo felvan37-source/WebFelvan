@@ -11,6 +11,9 @@
   <meta name="theme-color" content="#1a73e8">
   <link rel="apple-touch-icon" href="/icon-192.png">
 
+  <!-- TAMBAHAN NOTIFIKASI: OneSignal -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; background: #fff; }
     .wrap { position: fixed; inset: 0; overflow: hidden; }
@@ -49,6 +52,19 @@
         navigator.serviceWorker.register("/sw.js");
       });
     }
+
+    // TAMBAHAN NOTIFIKASI: inisialisasi OneSignal
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function (OneSignal) {
+      await OneSignal.init({
+        appId: "8530aeec-868f-45ef-ba6c-2613f17de0b5",
+        serviceWorkerPath: "sw.js",
+        serviceWorkerParam: { scope: "/" },
+        allowLocalhostAsSecureOrigin: false
+      });
+      // Tampilkan ajakan "Aktifkan notifikasi" kepada murid
+      OneSignal.Slidedown.promptPush();
+    });
 
     // TAMBAHAN PWA (3): logika tombol install
     let deferredPrompt;
