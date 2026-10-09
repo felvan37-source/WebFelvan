@@ -59,8 +59,8 @@
 <body>
   <!-- Konten yang bisa dibaca Google (iframe GAS tidak terbaca sebagai konten halaman ini) -->
   <div class="sr-only">
-    <h1>Felvan Course - Kursus Bahasa Inggris Online</h1>
-    <p>Belajar Bahasa Inggris online interaktif lewat Zoom meeting. Siap berbicara Bahasa Inggris dengan percaya diri dari mana saja? Yuk gabung di Felvan Course!</p>
+    <h1 id="seoTitle">Felvan Course - Kursus Bahasa Inggris Online</h1>
+    <p id="seoDesc">Belajar Bahasa Inggris online interaktif lewat Zoom meeting. Siap berbicara Bahasa Inggris dengan percaya diri dari mana saja? Yuk gabung di Felvan Course!</p>
   </div>
 
   <div class="wrap">
@@ -77,6 +77,12 @@
     const GAS = "https://script.google.com/macros/s/AKfycbyMH2Tqm_eGNDB-V-EB6x9wMT1L59tOevuOICUpc-l-bu8bSw7BufMT1oJZrDK3hRe3kQ/exec";
     document.getElementById("app").src = GAS + window.location.search;
 
+    // Fungsi bantu: ubah isi sebuah tag di <head>
+    function setTag(selector, attr, value) {
+      var el = document.querySelector(selector);
+      if (el && value) el.setAttribute(attr, value);
+    }
+
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
         navigator.serviceWorker.register("/sw.js");
@@ -88,7 +94,7 @@
     OneSignalDeferred.push(async function (OneSignal) {
       await OneSignal.init({
         appId: "8530aeec-868f-45ef-ba6c-2613f17de0b5",
-        serviceWorkerPath: "sw.js",
+        serviceWorkerPath: "/sw.js",
         serviceWorkerParam: { scope: "/" }
       });
     });
@@ -127,6 +133,25 @@
         OneSignalDeferred.push(async function (OneSignal) {
           await OneSignal.logout();
         });
+      }
+      // Jika halaman detail artikel selesai dimuat di dalam iframe
+      else if (d.type === "felvan-article" && d.title) {
+        var title = String(d.title).slice(0, 120);
+        var desc = String(d.description || "").slice(0, 160);
+        var fullTitle = title + " - Felvan Course";
+        var url = d.id
+          ? location.origin + "/?v=ArticleDetail&id=" + encodeURIComponent(String(d.id))
+          : location.origin + "/" + location.search;
+
+        document.title = fullTitle;
+        document.getElementById("seoTitle").textContent = title;
+        if (desc) document.getElementById("seoDesc").textContent = desc;
+
+        setTag('meta[name="description"]', "content", desc);
+        setTag('link[rel="canonical"]', "href", url);
+        setTag('meta[property="og:title"]', "content", fullTitle);
+        setTag('meta[property="og:description"]', "content", desc);
+        setTag('meta[property="og:url"]', "content", url);
       }
     });
 
