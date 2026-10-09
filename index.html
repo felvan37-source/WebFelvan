@@ -3,7 +3,21 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Felvan Course System</title>
+
+  <!-- SEO -->
+  <title>Felvan Course - Kursus Bahasa Inggris Online via Zoom</title>
+  <meta name="description" content="Belajar Bahasa Inggris online interaktif lewat Zoom meeting bersama Felvan Course. Siap berbicara Bahasa Inggris dengan percaya diri dari mana saja? Yuk gabung!">
+  <link rel="canonical" href="https://felvancourse.online/">
+  <meta name="robots" content="index, follow">
+
+  <!-- Open Graph (tampilan saat link dibagikan) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Felvan Course">
+  <meta property="og:title" content="Felvan Course - Kursus Bahasa Inggris Online via Zoom">
+  <meta property="og:description" content="Belajar Bahasa Inggris online interaktif lewat Zoom meeting bersama Felvan Course. Gabung dan belajar dari mana saja.">
+  <meta property="og:url" content="https://felvancourse.online/">
+  <meta property="og:image" content="https://iili.io/CYBXpR4.png">
+
   <link rel="icon" href="https://iili.io/CYBXpR4.png">
 
   <link rel="manifest" href="/manifest.json">
@@ -27,16 +41,36 @@
     @media (max-width: 600px) {
       iframe { top: -10px; height: calc(100% + 10px); }
     }
+
+    /* Teks untuk mesin pencari & screen reader, tidak tampil di layar */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <iframe id="app" allow="clipboard-write; camera; microphone; geolocation; fullscreen" allowfullscreen></iframe>
+  <!-- Konten yang bisa dibaca Google (iframe GAS tidak terbaca sebagai konten halaman ini) -->
+  <div class="sr-only">
+    <h1>Felvan Course - Kursus Bahasa Inggris Online</h1>
+    <p>Belajar Bahasa Inggris online interaktif lewat Zoom meeting. Siap berbicara Bahasa Inggris dengan percaya diri dari mana saja? Yuk gabung di Felvan Course!</p>
   </div>
 
-  <button id="installBtn" style="display:none;position:fixed;bottom:16px;right:16px;z-index:9999;padding:12px 18px;border:0;border-radius:24px;background:#1a73e8;color:#fff;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:pointer">
-    Install Aplikasi
-  </button>
+  <div class="wrap">
+    <iframe id="app" title="Felvan Course System" allow="clipboard-write; camera; microphone; geolocation; fullscreen" allowfullscreen></iframe>
+  </div>
+
+  <!-- data-nosnippet harus di div/span/section (tidak berlaku di button). Teks tombol diisi lewat JS. -->
+  <div data-nosnippet>
+    <button id="installBtn" style="display:none;position:fixed;bottom:16px;right:16px;z-index:9999;padding:12px 18px;border:0;border-radius:24px;background:#1a73e8;color:#fff;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:pointer"></button>
+  </div>
 
   <script>
     // URL Web App Google Apps Script milikmu
@@ -67,7 +101,7 @@
       if (!ok) return;
 
       const d = ev.data || {};
-      
+
       // Jika murid berhasil login
       if (d.type === "felvan-login" && d.email) {
         OneSignalDeferred.push(async function (OneSignal) {
@@ -80,14 +114,14 @@
             kelas: String(d.className || ""),
             status_akun: String(d.status || "")
           };
-          
+
           String(d.classId || "").split(",").map(function (x) { return x.trim(); }).forEach(function (id) {
             if (id && id.indexOf("PRG") !== 0) tags["kelas_" + id] = "1";
           });
           OneSignal.User.addTags(tags);
           OneSignal.Slidedown.promptPush(); // Minta izin notifikasi
         });
-      } 
+      }
       // Jika murid logout
       else if (d.type === "felvan-logout") {
         OneSignalDeferred.push(async function (OneSignal) {
@@ -102,6 +136,7 @@
     window.addEventListener("beforeinstallprompt", function (e) {
       e.preventDefault();
       deferredPrompt = e;
+      installBtn.textContent = "Install Aplikasi";
       installBtn.style.display = "block";
     });
     installBtn.addEventListener("click", async function () {
