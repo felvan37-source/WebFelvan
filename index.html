@@ -10,6 +10,19 @@
   <link rel="canonical" href="https://felvancourse.online/">
   <meta name="robots" content="index, follow">
 
+  <!-- Canonical otomatis untuk halaman artikel (dijalankan paling awal) -->
+  <script>
+    (function () {
+      var p = new URLSearchParams(location.search);
+      var id = p.get("id");
+      if (p.get("v") === "ArticleDetail" && id) {
+        var url = location.origin + "/?v=ArticleDetail&id=" + encodeURIComponent(id);
+        var c = document.querySelector('link[rel="canonical"]');
+        if (c) c.setAttribute("href", url);
+      }
+    })();
+  </script>
+
   <!-- Open Graph (tampilan saat link dibagikan) -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Felvan Course">
