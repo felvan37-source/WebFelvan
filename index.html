@@ -10,19 +10,6 @@
   <link rel="canonical" href="https://felvancourse.online/">
   <meta name="robots" content="index, follow">
 
-  <!-- Canonical otomatis untuk halaman artikel (dijalankan paling awal) -->
-  <script>
-    (function () {
-      var p = new URLSearchParams(location.search);
-      var id = p.get("id");
-      if (p.get("v") === "ArticleDetail" && id) {
-        var url = location.origin + "/?v=ArticleDetail&id=" + encodeURIComponent(id);
-        var c = document.querySelector('link[rel="canonical"]');
-        if (c) c.setAttribute("href", url);
-      }
-    })();
-  </script>
-
   <!-- Open Graph (tampilan saat link dibagikan) -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Felvan Course">
@@ -78,9 +65,8 @@
 
   <div class="wrap">
     <!-- allow: autoplay/encrypted-media/picture-in-picture/fullscreen diteruskan sampai ke iframe YouTube di dalam GAS -->
+    <iframe id="app" title="Felvan Course System" allow="clipboard-write; camera; microphone; geolocation; fullscreen" allowfullscreen></iframe>
     <iframe id="app" title="Felvan Course System" allow="autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; clipboard-write; camera; microphone; geolocation" allowfullscreen></iframe>
-  </div>
-
   <!-- data-nosnippet harus di div/span/section (tidak berlaku di button). Teks tombol diisi lewat JS. -->
   <div data-nosnippet>
     <button id="installBtn" style="display:none;position:fixed;bottom:16px;right:16px;z-index:9999;padding:12px 18px;border:0;border-radius:24px;background:#1a73e8;color:#fff;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:pointer"></button>
