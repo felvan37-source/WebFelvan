@@ -65,7 +65,6 @@
         height: calc(100% + 10px);
       }
     }
-    /* Teks SEO dan screen reader */
     .sr-only {
       position: absolute;
       width: 1px;
@@ -81,17 +80,11 @@
 </head>
 
 <body>
-  <!-- Konten SEO halaman utama -->
   <div class="sr-only">
     <h1 id="seoTitle">Felvan Course - Kursus Bahasa Inggris Online</h1>
-    <p id="seoDesc">
-      Belajar Bahasa Inggris online interaktif lewat Zoom meeting.
-      Siap berbicara Bahasa Inggris dengan percaya diri dari mana saja?
-      Yuk gabung di Felvan Course!
-    </p>
+    <p id="seoDesc">Belajar Bahasa Inggris online interaktif lewat Zoom meeting. Siap berbicara Bahasa Inggris dengan percaya diri dari mana saja? Yuk gabung di Felvan Course!</p>
   </div>
 
-  <!-- Aplikasi Utama (Iframe) -->
   <div class="wrap">
     <iframe
       id="app"
@@ -101,7 +94,6 @@
     </iframe>
   </div>
 
-  <!-- Tombol instalasi PWA -->
   <div data-nosnippet>
     <button
       id="installBtn"
@@ -114,7 +106,6 @@
     // URL Web App Google Apps Script
     const GAS = "https://script.google.com/macros/s/AKfycbyMH2Tqm_eGNDB-V-EB6x9wMT1L59tOevuOICUpc-l-bu8bSw7BufMT1oJZrDK3hRe3kQ/exec";
 
-    // Helper membuat format URL Slug (contoh: "Tugas Grammar" -> "tugas-grammar")
     function slugify(text) {
       return text.toString().toLowerCase().trim()
         .replace(/\s+/g, '-')       
@@ -122,37 +113,44 @@
         .replace(/\-\-+/g, '-');    
     }
 
-    // 1. ROUTING CLIENT-SIDE (Cek URL saat halaman di-refresh/reload)
+    // 1. ROUTING CLIENT-SIDE (Mencegah tombol mati)
     let currentPath = window.location.pathname;
     let urlParams = new URLSearchParams(window.location.search);
-    let view = urlParams.get("v") || "LandingPage";
+    
+    // PRIORITAS: Jika tombol dipencet, URL akan punya param ?v= 
+    let view = urlParams.get("v"); 
 
-    // Peta Path URL ke View Apps Script
-    if (currentPath === "/" || currentPath === "/home") view = "LandingPage";
-    else if (currentPath.startsWith("/dashboard-soal")) view = "QuizEditor";
-    else if (currentPath.startsWith("/hasil-siswa")) view = "Verification";
-    else if (currentPath.startsWith("/dashboard-article")) view = "AdminArticle";
-    else if (currentPath.startsWith("/article/")) view = "ArticleDetail";
-    else if (currentPath.startsWith("/quiz/")) view = "QuizPlayer";
+    if (!view) {
+      // Jika halaman direfresh manual dan parameter hilang, baca ulang dari path Vercel
+      if (currentPath === "/home" || currentPath === "/") view = "LandingPage";
+      else if (currentPath === "/dashboard") view = "Index";
+      else if (currentPath === "/admin") view = "Admin";
+      else if (currentPath.startsWith("/dashboard-soal")) view = "QuizEditor";
+      else if (currentPath.startsWith("/hasil-siswa")) view = "Verification";
+      else if (currentPath.startsWith("/dashboard-article")) view = "AdminArticle";
+      else if (currentPath.startsWith("/article/")) view = "ArticleDetail";
+      else if (currentPath.startsWith("/quiz/")) view = "QuizPlayer";
+      else view = "LandingPage"; // Fallback aman
+    }
 
-    // Set param 'v' yg benar untuk dikirim ke Iframe GAS
+    // Pasang parameter ke iframe
     urlParams.set("v", view);
-
     const appFrame = document.getElementById("app");
     const seoTitle = document.getElementById("seoTitle");
     const seoDesc = document.getElementById("seoDesc");
     const canonicalLink = document.getElementById("canonicalLink");
 
-    // Terapkan URL ke Iframe GAS
     appFrame.src = GAS + "?" + urlParams.toString();
 
-    // 2. FUNGSI UPDATE URL BROWSER (Merapikan address bar tanpa me-reload)
+    // 2. FUNGSI UPDATE URL BROWSER (Merapikan address bar saat halaman berubah)
     function updateBrowserURL(pageView, title) {
       let newPath = "/";
       let newSearch = new URLSearchParams(window.location.search);
-      newSearch.delete("v"); // Hilangkan '?v=' agar rapi
+      newSearch.delete("v"); // Sembunyikan '?v=' agar rapi
 
-      if (pageView === "LandingPage") newPath = "/home";
+      if (pageView === "LandingPage") newPath = "/";
+      else if (pageView === "Index") newPath = "/dashboard";
+      else if (pageView === "Admin") newPath = "/admin";
       else if (pageView === "QuizEditor") newPath = "/dashboard-soal";
       else if (pageView === "Verification") newPath = "/hasil-siswa";
       else if (pageView === "AdminArticle") newPath = "/dashboard-article";
@@ -164,18 +162,22 @@
         let slug = title ? slugify(title) : "play";
         newPath = "/quiz/" + slug;
       } else {
-        newPath = currentPath; // Pertahankan path jika tidak terdaftar
-        newSearch.set("v", pageView);
+        newPath = currentPath; 
+        newSearch.set("v", pageView); 
       }
 
       let searchStr = newSearch.toString();
       let finalUrl = newPath + (searchStr ? "?" + searchStr : "");
-      window.history.replaceState(null, title || document.title, finalUrl);
-      canonicalLink.href = window.location.href; // Update Canonical
+      
+      // Update browser history jika URL benar-benar berubah
+      if (window.location.pathname + window.location.search !== finalUrl) {
+          window.history.replaceState(null, title || document.title, finalUrl);
+      }
+      canonicalLink.href = window.location.origin + window.location.pathname; 
     }
 
-    // Eksekusi untuk merapikan URL statis segera saat web pertama dimuat
-    if (["LandingPage", "QuizEditor", "Verification", "AdminArticle"].includes(view)) {
+    // Rapikan URL secara otomatis di awal
+    if (["LandingPage", "Index", "Admin", "QuizEditor", "Verification", "AdminArticle"].includes(view)) {
        updateBrowserURL(view, document.title);
     }
 
@@ -185,7 +187,6 @@
       if (el && value) el.setAttribute(attr, value);
     }
 
-    // Normalisasi teks
     function cleanText(value, maxLength) {
       return String(value || "").replace(/\s+/g, " ").trim().slice(0, maxLength);
     }
@@ -201,7 +202,6 @@
       seoTitle.textContent = title;
       seoDesc.textContent = desc;
 
-      // Ubah URL address bar ke -> /article/judul-artikelnya
       updateBrowserURL("ArticleDetail", title);
 
       const articleURL = window.location.href;
@@ -210,22 +210,6 @@
       setTag('meta[property="og:title"]', "content", fullTitle);
       setTag('meta[property="og:description"]', "content", desc);
       setTag('meta[property="og:url"]', "content", articleURL);
-
-      let schemaScript = document.getElementById("articleSchema");
-      if (!schemaScript) {
-        schemaScript = document.createElement("script");
-        schemaScript.type = "application/ld+json";
-        schemaScript.id = "articleSchema";
-        document.head.appendChild(schemaScript);
-      }
-      schemaScript.textContent = JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": title,
-        "description": desc,
-        "mainEntityOfPage": { "@type": "WebPage", "@id": articleURL },
-        "publisher": { "@type": "Organization", "name": "Felvan Course", "url": "https://www.felvancourse.online/" }
-      });
     }
 
     // Pendaftaran Service Worker
@@ -243,7 +227,7 @@
       });
     });
 
-    // 3. EVENT LISTENER PESAN DARI IFRAME GAS
+    // 3. EVENT LISTENER KOMUNIKASI IFRAME
     window.addEventListener("message", function (ev) {
       let host = "";
       try { host = new URL(ev.origin).hostname; } catch (e) { return; }
@@ -252,7 +236,6 @@
 
       const d = ev.data || {};
 
-      // Fitur Notifikasi Push OneSignal
       if (d.type === "felvan-login" && d.email) {
         OneSignalDeferred.push(async function (OneSignal) {
           await OneSignal.login(d.email);
@@ -265,17 +248,16 @@
       else if (d.type === "felvan-logout") {
         OneSignalDeferred.push(async function (OneSignal) { await OneSignal.logout(); });
       }
-      // Membuka Artikel Ter-intercept URLnya
+      // Trigger perbarui URL & Metadata untuk Artikel
       else if (d.type === "felvan-article" && d.title) {
         updateArticleMetadata(d);
       }
-      // Membuka Quiz Ter-intercept URLnya (contoh: jika iframe men-trigger felvan-quiz)
+      // Trigger perbarui URL untuk Kuis (Opsional jika Anda pasang postMessage di Player Kuis)
       else if (d.type === "felvan-quiz" && d.title) {
-        const fullTitle = cleanText(d.title, 120) + " | Felvan Course";
-        document.title = fullTitle;
+        document.title = cleanText(d.title, 120) + " | Felvan Course";
         updateBrowserURL("QuizPlayer", d.title);
       }
-      // Route Navigator dinamis dari GAS
+      // Routing dinamis manual dari dalam Google Apps Script
       else if (d.type === "felvan-navigate" && d.view) {
         if(d.title) document.title = cleanText(d.title, 120) + " | Felvan Course";
         updateBrowserURL(d.view, d.title);
