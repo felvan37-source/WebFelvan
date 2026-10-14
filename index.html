@@ -147,15 +147,20 @@
     // Halaman Apps Script yang sedang dibuka di iframe (diisi oleh blok pemuat di bawah)
     let PAGE = "LandingPage";
 
-    // Query string tanpa parameter v (apa adanya, tanpa di-encode ulang)
-    function queryWithoutV() {
+    // Query string tanpa parameter tertentu (apa adanya, tanpa di-encode ulang)
+    function queryWithout(skip) {
       const rest = window.location.search.replace(/^\?/, "").split("&").filter(function (s) {
-        return s && s.split("=")[0] !== "v";
+        return s && skip.indexOf(s.split("=")[0]) === -1;
       });
       return rest.length ? "?" + rest.join("&") : "";
     }
 
-    // Ubah judul jadi slug alamat: "Tips Belajar Grammar!" -> "tips-belajar-grammar"
+    // Query string tanpa parameter v
+    function queryWithoutV() {
+      return queryWithout(["v"]);
+    }
+
+    // Ubah teks jadi slug alamat: "Tips Belajar Grammar!" -> "tips-belajar-grammar"
     function slugify(text) {
       return String(text || "")
         .replace(/<[^>]*>/g, " ")
@@ -168,9 +173,14 @@
         .replace(/-+$/g, "");
     }
 
-    // Ganti alamat di address bar tanpa reload
-    function setAddress(path) {
-      try { history.replaceState(null, "", path); } catch (e) {}
+    // Slug dari judul kuis/artikel (harus sama dengan felvanSlug_() di Code.gs)
+    function titleSlug(text) {
+      return slugify(String(text || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 120));
+    }
+
+    // Ganti alamat di address bar tanpa reload (state opsional, ikut tersimpan saat halaman di-refresh)
+    function setAddress(path, state) {
+      try { history.replaceState(state === undefined ? null : state, "", path); } catch (e) {}
     }
 
     // Muat aplikasi beserta parameter URL
@@ -193,6 +203,27 @@
         if (page) {
           const rest = queryWithoutV();
           src = GAS + "?v=" + page + (rest ? "&" + rest.slice(1) : "");
+
+          // /quiz/judul-kuis atau /article/judul-artikel tanpa ID di alamat:
+          // pakai ID yang tersimpan di tab ini (saat refresh); kalau tidak ada, minta Apps Script mencarinya dari judul
+          if (page === "QuizPlayer" || page === "ArticleDetail") {
+            const isQuiz = page === "QuizPlayer";
+            const basePath = isQuiz ? "/quiz/" : "/article/";
+            const idKey = isQuiz ? "postId" : "id";
+            const stateKey = isQuiz ? "postId" : "articleId";
+
+            if (!new RegExp("(\\?|&)" + idKey + "=").test(rest)) {
+              const st = history.state;
+              let seg = path.indexOf(basePath) === 0 ? path.slice(basePath.length).split("/")[0] : "";
+              try { seg = decodeURIComponent(seg); } catch (e) {}
+
+              if (st && st[stateKey]) src += "&" + idKey + "=" + encodeURIComponent(st[stateKey]);
+              else if (seg) src += "&slug=" + encodeURIComponent(seg);
+            }
+          }
+        } else if (path !== "/") {
+          // Alamat yang tidak dikenal -> kembali ke beranda
+          setAddress("/" + window.location.search + window.location.hash);
         }
       }
 
@@ -300,14 +331,11 @@
             encodeURIComponent(String(d.id))
           : location.origin + "/" + location.search;
 
-        // Rapikan alamat browser jadi /article/judul-artikel?id=...
-        // Hanya jika halaman ini memang halaman artikel (bukan artikel yang dibuka sebagai pop-up di dashboard)
+        // Canonical memakai alamat cantik /article/judul-artikel
+        // (hanya jika halaman ini memang halaman artikel, bukan artikel yang dibuka sebagai pop-up di dashboard)
         if (d.id && PAGE === "ArticleDetail") {
-          var artSlug = slugify(title);
-          var artPath = "/article" + (artSlug ? "/" + artSlug : "") +
-            "?id=" + encodeURIComponent(String(d.id));
-          setAddress(artPath);
-          url = location.origin + artPath;
+          var artSlug = titleSlug(d.title);
+          if (artSlug) url = location.origin + "/article/" + artSlug;
         }
 
         // Perbarui judul halaman
@@ -353,15 +381,24 @@
         schemaScript.textContent = JSON.stringify(articleSchema);
       }
 
-      // KUIS / TUGAS (judul dikirim dari QuizPlayer.html)
-      else if (d.type === "felvan-quiz" && d.title) {
-        if (PAGE === "QuizPlayer") {
-          var quizTitle = String(d.title).replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 120);
-          var quizSlug = slugify(quizTitle);
+      // HALAMAN KUIS / ARTIKEL (judul dikirim dari doGet di Code.gs)
+      // -> alamat jadi /quiz/judul-kuis atau /article/judul-artikel
+      else if (d.type === "felvan-page" && d.id && d.title) {
+        var pageKind = d.kind === "article" ? "article" : (d.kind === "quiz" ? "quiz" : "");
 
-          setAddress("/quiz" + (quizSlug ? "/" + quizSlug : "") + queryWithoutV() + window.location.hash);
+        if (pageKind && PAGE === (pageKind === "article" ? "ArticleDetail" : "QuizPlayer")) {
+          var pageTitle = String(d.title).replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 120);
+          var pageSlug = titleSlug(pageTitle);
 
-          if (quizTitle) document.title = quizTitle + " - Felvan Course";
+          // ID disimpan tersembunyi di tab ini, jadi refresh tetap membuka halaman yang sama
+          if (pageSlug) {
+            setAddress(
+              "/" + pageKind + "/" + pageSlug + queryWithout(["v", "postId", "id", "slug"]) + window.location.hash,
+              pageKind === "article" ? { articleId: String(d.id) } : { postId: String(d.id) }
+            );
+          }
+
+          if (pageKind === "quiz" && pageTitle) document.title = pageTitle + " - Felvan Course";
         }
       }
     });
