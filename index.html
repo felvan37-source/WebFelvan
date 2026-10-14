@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -10,7 +9,7 @@
   <meta name="application-name" content="Felvan Course">
   <meta name="description" content="Belajar Bahasa Inggris online interaktif lewat Zoom meeting bersama Felvan Course. Siap berbicara Bahasa Inggris dengan percaya diri dari mana saja? Yuk gabung!">
   <meta name="robots" content="index, follow">
-  <link id="canonicalLink" rel="canonical" href="https://felvancourse.online/">
+  <link id="canonicalLink" rel="canonical" href="https://www.felvancourse.online/">
 
   <!-- Google Site Name -->
   <script type="application/ld+json" id="websiteSchema">
@@ -19,7 +18,7 @@
     "@type": "WebSite",
     "name": "Felvan Course",
     "alternateName": "Felvan",
-    "url": "https://felvancourse.online/"
+    "url": "https://www.felvancourse.online/"
   }
   </script>
 
@@ -28,9 +27,10 @@
   <meta property="og:site_name" content="Felvan Course">
   <meta property="og:title" content="Felvan Course - Kursus Bahasa Inggris Online via Zoom">
   <meta property="og:description" content="Belajar Bahasa Inggris online interaktif lewat Zoom meeting bersama Felvan Course. Gabung dan belajar dari mana saja.">
-  <meta property="og:url" content="https://felvancourse.online/">
+  <meta property="og:url" content="https://www.felvancourse.online/">
   <meta property="og:image" content="https://iili.io/CYBXpR4.png">
 
+  <!-- Icons & PWA -->
   <link rel="icon" href="https://iili.io/CYBXpR4.png">
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#1a73e8">
@@ -95,6 +95,7 @@
     </p>
   </div>
 
+  <!-- Aplikasi Utama (Iframe) -->
   <div class="wrap">
     <iframe
       id="app"
@@ -109,6 +110,7 @@
     <button
       id="installBtn"
       style="display:none;position:fixed;bottom:16px;right:16px;z-index:9999;padding:12px 18px;border:0;border-radius:24px;background:#1a73e8;color:#fff;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:pointer">
+      Install Aplikasi
     </button>
   </div>
 
@@ -124,13 +126,9 @@
 
     // Deteksi apakah URL membuka halaman artikel
     const initialParams = new URLSearchParams(window.location.search);
-    const isArticleRoute =
-      initialParams.get("v") === "ArticleDetail" &&
-      Boolean(initialParams.get("id"));
+    const isArticleRoute = initialParams.get("v") === "ArticleDetail" && Boolean(initialParams.get("id"));
 
     // URL canonical berdasarkan jenis halaman
-    // Homepage tetap menggunakan URL utama.
-    // Halaman artikel menggunakan URL artikel masing-masing.
     function getCanonicalURL() {
       if (isArticleRoute) {
         const articleURL = new URL("/", window.location.origin);
@@ -138,8 +136,7 @@
         articleURL.searchParams.set("id", initialParams.get("id"));
         return articleURL.href;
       }
-
-      return "https://felvancourse.online/";
+      return "https://www.felvancourse.online/";
     }
 
     canonicalLink.href = getCanonicalURL();
@@ -150,7 +147,6 @@
     // Fungsi memperbarui metadata
     function setTag(selector, attr, value) {
       const el = document.querySelector(selector);
-
       if (el && value !== undefined && value !== null) {
         el.setAttribute(attr, value);
       }
@@ -164,14 +160,13 @@
         .slice(0, maxLength);
     }
 
-    // Format judul artikel
+    // Format judul artikel (Pesan dari Iframe)
     function updateArticleMetadata(data) {
       const title = cleanText(data.title, 120);
       const desc = cleanText(data.description, 160);
 
       if (!title) return;
 
-      // Hindari menimpa metadata artikel dengan data yang salah
       if (isArticleRoute && data.id) {
         if (String(data.id) !== initialParams.get("id")) return;
       }
@@ -179,22 +174,22 @@
       const fullTitle = title + " | Felvan Course";
       const articleURL = getCanonicalURL();
 
-      // Judul dan deskripsi dokumen
+      // Update DOM
       document.title = fullTitle;
       seoTitle.textContent = title;
       seoDesc.textContent = desc;
 
-      // Meta description dan canonical
+      // Update Meta & Canonical
       setTag('meta[name="description"]', "content", desc);
       canonicalLink.href = articleURL;
 
-      // Open Graph
+      // Update Open Graph
       setTag('meta[property="og:type"]', "content", "article");
       setTag('meta[property="og:title"]', "content", fullTitle);
       setTag('meta[property="og:description"]', "content", desc);
       setTag('meta[property="og:url"]', "content", articleURL);
 
-      // Schema Article
+      // Update / Create Schema Article
       const articleSchema = {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -207,23 +202,21 @@
         "publisher": {
           "@type": "Organization",
           "name": "Felvan Course",
-          "url": "https://felvancourse.online/"
+          "url": "https://www.felvancourse.online/"
         }
       };
 
       let schemaScript = document.getElementById("articleSchema");
-
       if (!schemaScript) {
         schemaScript = document.createElement("script");
         schemaScript.type = "application/ld+json";
         schemaScript.id = "articleSchema";
         document.head.appendChild(schemaScript);
       }
-
       schemaScript.textContent = JSON.stringify(articleSchema);
     }
 
-    // Service Worker
+    // Pendaftaran Service Worker
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
         navigator.serviceWorker.register("/sw.js");
@@ -232,39 +225,30 @@
 
     // Inisialisasi OneSignal
     window.OneSignalDeferred = window.OneSignalDeferred || [];
-
     OneSignalDeferred.push(async function (OneSignal) {
       await OneSignal.init({
         appId: "8530aeec-868f-45ef-ba6c-2613f17de0b5",
         serviceWorkerPath: "/sw.js",
-        serviceWorkerParam: {
-          scope: "/"
-        }
+        serviceWorkerParam: { scope: "/" }
       });
     });
 
-    // Menerima pesan dari iframe GAS
+    // Event Listener Pesan dari Iframe GAS
     window.addEventListener("message", function (ev) {
       let host = "";
-
       try {
         host = new URL(ev.origin).hostname;
       } catch (e) {
         return;
       }
 
-      const ok =
-        host === "script.google.com" ||
-        host.endsWith(".googleusercontent.com");
-
+      const ok = host === "script.google.com" || host.endsWith(".googleusercontent.com");
       if (!ok) return;
-
-      // Pastikan pesan berasal dari iframe aplikasi
       if (ev.source !== appFrame.contentWindow) return;
 
       const d = ev.data || {};
 
-      // LOGIN
+      // Proses Login
       if (d.type === "felvan-login" && d.email) {
         OneSignalDeferred.push(async function (OneSignal) {
           await OneSignal.login(d.email);
@@ -279,9 +263,7 @@
 
           String(d.classId || "")
             .split(",")
-            .map(function (x) {
-              return x.trim();
-            })
+            .map(function (x) { return x.trim(); })
             .forEach(function (id) {
               if (id && id.indexOf("PRG") !== 0) {
                 tags["kelas_" + id] = "1";
@@ -293,34 +275,31 @@
         });
       }
 
-      // LOGOUT
+      // Proses Logout
       else if (d.type === "felvan-logout") {
         OneSignalDeferred.push(async function (OneSignal) {
           await OneSignal.logout();
         });
       }
 
-      // ARTIKEL
+      // Proses Artikel
       else if (d.type === "felvan-article" && d.title) {
         updateArticleMetadata(d);
       }
     });
 
-    // PWA INSTALL PROMPT
+    // PWA Install Prompt
     let deferredPrompt;
     const installBtn = document.getElementById("installBtn");
 
     window.addEventListener("beforeinstallprompt", function (e) {
       e.preventDefault();
       deferredPrompt = e;
-
-      installBtn.textContent = "Install Aplikasi";
       installBtn.style.display = "block";
     });
 
     installBtn.addEventListener("click", async function () {
       installBtn.style.display = "none";
-
       if (deferredPrompt) {
         deferredPrompt.prompt();
         await deferredPrompt.userChoice;
