@@ -115,41 +115,93 @@
     // URL Web App Google Apps Script
     const GAS = "https://script.google.com/macros/s/AKfycbyMH2Tqm_eGNDB-V-EB6x9wMT1L59tOevuOICUpc-l-bu8bSw7BufMT1oJZrDK3hRe3kQ/exec";
 
-    // Alamat cantik di browser -> halaman Apps Script (parameter v)
+    // Alamat cantik (tetap) -> halaman Apps Script (parameter v)
     const ROUTES = {
+      "/home": "LandingPage",
       "/classroom": "Index",
       "/dashboard": "Index",
-      "/admin": "Admin"
+      "/admin": "Admin",
+      "/dashboard-soal": "QuizEditor",
+      "/hasil-siswa": "Verification",
+      "/dashboard-article": "AdminArticles"
+    };
+
+    // Alamat cantik dengan judul di belakangnya: /article/judul-artikel dan /quiz/judul-kuis
+    const PREFIX_ROUTES = {
+      "/article": "ArticleDetail",
+      "/quiz": "QuizPlayer"
     };
 
     // Kebalikannya: halaman Apps Script -> alamat cantik yang tampil di browser
     const PRETTY = {
+      "LandingPage": "/home",
       "Index": "/classroom",
-      "Admin": "/admin"
+      "Admin": "/admin",
+      "QuizEditor": "/dashboard-soal",
+      "Verification": "/hasil-siswa",
+      "AdminArticles": "/dashboard-article",
+      "ArticleDetail": "/article",
+      "QuizPlayer": "/quiz"
     };
+
+    // Halaman Apps Script yang sedang dibuka di iframe (diisi oleh blok pemuat di bawah)
+    let PAGE = "LandingPage";
+
+    // Query string tanpa parameter v (apa adanya, tanpa di-encode ulang)
+    function queryWithoutV() {
+      const rest = window.location.search.replace(/^\?/, "").split("&").filter(function (s) {
+        return s && s.split("=")[0] !== "v";
+      });
+      return rest.length ? "?" + rest.join("&") : "";
+    }
+
+    // Ubah judul jadi slug alamat: "Tips Belajar Grammar!" -> "tips-belajar-grammar"
+    function slugify(text) {
+      return String(text || "")
+        .replace(/<[^>]*>/g, " ")
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/&/g, " dan ")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 80)
+        .replace(/-+$/g, "");
+    }
+
+    // Ganti alamat di address bar tanpa reload
+    function setAddress(path) {
+      try { history.replaceState(null, "", path); } catch (e) {}
+    }
 
     // Muat aplikasi beserta parameter URL
     (function () {
-      var params = new URLSearchParams(window.location.search);
-      var path = window.location.pathname.replace(/\/+$/, "").toLowerCase() || "/";
+      const path = window.location.pathname.replace(/\/+$/, "").toLowerCase() || "/";
+      const v = new URLSearchParams(window.location.search).get("v");
+      let page = v;
+      let src = GAS + window.location.search;
 
-      var src = GAS + window.location.search;
+      // Alamat cantik (mis. /classroom) -> tambahkan ?v=... otomatis untuk iframe
+      if (!page) {
+        page = ROUTES[path] || null;
 
-      // /classroom, /dashboard, /admin -> tambahkan ?v=... otomatis untuk iframe
-      if (ROUTES[path] && !params.get("v")) {
-        params.set("v", ROUTES[path]);
-        src = GAS + "?" + params.toString();
+        if (!page) {
+          for (const prefix in PREFIX_ROUTES) {
+            if (path === prefix || path.indexOf(prefix + "/") === 0) page = PREFIX_ROUTES[prefix];
+          }
+        }
+
+        if (page) {
+          const rest = queryWithoutV();
+          src = GAS + "?v=" + page + (rest ? "&" + rest.slice(1) : "");
+        }
       }
 
       document.getElementById("app").src = src;
+      PAGE = page || "LandingPage";
 
-      // Link lama /?v=Index dirapikan jadi /classroom (parameter lain tetap dibawa)
-      var page = params.get("v");
-      if (path === "/" && PRETTY[page]) {
-        var rest = new URLSearchParams(window.location.search);
-        rest.delete("v");
-        var restQs = rest.toString();
-        history.replaceState(null, "", PRETTY[page] + (restQs ? "?" + restQs : "") + window.location.hash);
+      // Link lama /?v=... dirapikan jadi alamat cantik (parameter lain tetap dibawa)
+      if (path === "/" && v && PRETTY[v]) {
+        setAddress(PRETTY[v] + queryWithoutV() + window.location.hash);
       }
     })();
 
@@ -248,6 +300,16 @@
             encodeURIComponent(String(d.id))
           : location.origin + "/" + location.search;
 
+        // Rapikan alamat browser jadi /article/judul-artikel?id=...
+        // Hanya jika halaman ini memang halaman artikel (bukan artikel yang dibuka sebagai pop-up di dashboard)
+        if (d.id && PAGE === "ArticleDetail") {
+          var artSlug = slugify(title);
+          var artPath = "/article" + (artSlug ? "/" + artSlug : "") +
+            "?id=" + encodeURIComponent(String(d.id));
+          setAddress(artPath);
+          url = location.origin + artPath;
+        }
+
         // Perbarui judul halaman
         document.title = fullTitle;
 
@@ -289,6 +351,18 @@
         }
 
         schemaScript.textContent = JSON.stringify(articleSchema);
+      }
+
+      // KUIS / TUGAS (judul dikirim dari QuizPlayer.html)
+      else if (d.type === "felvan-quiz" && d.title) {
+        if (PAGE === "QuizPlayer") {
+          var quizTitle = String(d.title).replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 120);
+          var quizSlug = slugify(quizTitle);
+
+          setAddress("/quiz" + (quizSlug ? "/" + quizSlug : "") + queryWithoutV() + window.location.hash);
+
+          if (quizTitle) document.title = quizTitle + " - Felvan Course";
+        }
       }
     });
 
