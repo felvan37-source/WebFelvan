@@ -46,13 +46,11 @@
       overflow: hidden;
       background: #fff;
     }
-
     .wrap {
       position: fixed;
       inset: 0;
       overflow: hidden;
     }
-
     iframe {
       position: absolute;
       top: -10px;
@@ -61,14 +59,12 @@
       height: calc(100% + 10px);
       border: 0;
     }
-
     @media (max-width: 600px) {
       iframe {
         top: -10px;
         height: calc(100% + 10px);
       }
     }
-
     /* Teks SEO dan screen reader */
     .sr-only {
       position: absolute;
@@ -118,93 +114,102 @@
     // URL Web App Google Apps Script
     const GAS = "https://script.google.com/macros/s/AKfycbyMH2Tqm_eGNDB-V-EB6x9wMT1L59tOevuOICUpc-l-bu8bSw7BufMT1oJZrDK3hRe3kQ/exec";
 
-    // Elemen aplikasi
+    // Helper membuat format URL Slug (contoh: "Tugas Grammar" -> "tugas-grammar")
+    function slugify(text) {
+      return text.toString().toLowerCase().trim()
+        .replace(/\s+/g, '-')       
+        .replace(/[^\w\-]+/g, '')   
+        .replace(/\-\-+/g, '-');    
+    }
+
+    // 1. ROUTING CLIENT-SIDE (Cek URL saat halaman di-refresh/reload)
+    let currentPath = window.location.pathname;
+    let urlParams = new URLSearchParams(window.location.search);
+    let view = urlParams.get("v") || "LandingPage";
+
+    // Peta Path URL ke View Apps Script
+    if (currentPath === "/" || currentPath === "/home") view = "LandingPage";
+    else if (currentPath.startsWith("/dashboard-soal")) view = "QuizEditor";
+    else if (currentPath.startsWith("/hasil-siswa")) view = "Verification";
+    else if (currentPath.startsWith("/dashboard-article")) view = "AdminArticle";
+    else if (currentPath.startsWith("/article/")) view = "ArticleDetail";
+    else if (currentPath.startsWith("/quiz/")) view = "QuizPlayer";
+
+    // Set param 'v' yg benar untuk dikirim ke Iframe GAS
+    urlParams.set("v", view);
+
     const appFrame = document.getElementById("app");
     const seoTitle = document.getElementById("seoTitle");
     const seoDesc = document.getElementById("seoDesc");
     const canonicalLink = document.getElementById("canonicalLink");
 
-    // Deteksi apakah URL membuka halaman artikel
-    const initialParams = new URLSearchParams(window.location.search);
-    const isArticleRoute = initialParams.get("v") === "ArticleDetail" && Boolean(initialParams.get("id"));
+    // Terapkan URL ke Iframe GAS
+    appFrame.src = GAS + "?" + urlParams.toString();
 
-    // URL canonical berdasarkan jenis halaman
-    function getCanonicalURL() {
-      if (isArticleRoute) {
-        const articleURL = new URL("/", window.location.origin);
-        articleURL.searchParams.set("v", "ArticleDetail");
-        articleURL.searchParams.set("id", initialParams.get("id"));
-        return articleURL.href;
+    // 2. FUNGSI UPDATE URL BROWSER (Merapikan address bar tanpa me-reload)
+    function updateBrowserURL(pageView, title) {
+      let newPath = "/";
+      let newSearch = new URLSearchParams(window.location.search);
+      newSearch.delete("v"); // Hilangkan '?v=' agar rapi
+
+      if (pageView === "LandingPage") newPath = "/home";
+      else if (pageView === "QuizEditor") newPath = "/dashboard-soal";
+      else if (pageView === "Verification") newPath = "/hasil-siswa";
+      else if (pageView === "AdminArticle") newPath = "/dashboard-article";
+      else if (pageView === "ArticleDetail") {
+        let slug = title ? slugify(title) : "detail";
+        newPath = "/article/" + slug;
       }
-      return "https://www.felvancourse.online/";
+      else if (pageView === "QuizPlayer") {
+        let slug = title ? slugify(title) : "play";
+        newPath = "/quiz/" + slug;
+      } else {
+        newPath = currentPath; // Pertahankan path jika tidak terdaftar
+        newSearch.set("v", pageView);
+      }
+
+      let searchStr = newSearch.toString();
+      let finalUrl = newPath + (searchStr ? "?" + searchStr : "");
+      window.history.replaceState(null, title || document.title, finalUrl);
+      canonicalLink.href = window.location.href; // Update Canonical
     }
 
-    canonicalLink.href = getCanonicalURL();
-
-    // Muat aplikasi beserta parameter URL
-    appFrame.src = GAS + window.location.search;
+    // Eksekusi untuk merapikan URL statis segera saat web pertama dimuat
+    if (["LandingPage", "QuizEditor", "Verification", "AdminArticle"].includes(view)) {
+       updateBrowserURL(view, document.title);
+    }
 
     // Fungsi memperbarui metadata
     function setTag(selector, attr, value) {
       const el = document.querySelector(selector);
-      if (el && value !== undefined && value !== null) {
-        el.setAttribute(attr, value);
-      }
+      if (el && value) el.setAttribute(attr, value);
     }
 
-    // Normalisasi teks metadata
+    // Normalisasi teks
     function cleanText(value, maxLength) {
-      return String(value || "")
-        .replace(/\s+/g, " ")
-        .trim()
-        .slice(0, maxLength);
+      return String(value || "").replace(/\s+/g, " ").trim().slice(0, maxLength);
     }
 
-    // Format judul artikel (Pesan dari Iframe)
     function updateArticleMetadata(data) {
       const title = cleanText(data.title, 120);
       const desc = cleanText(data.description, 160);
-
       if (!title) return;
 
-      if (isArticleRoute && data.id) {
-        if (String(data.id) !== initialParams.get("id")) return;
-      }
-
       const fullTitle = title + " | Felvan Course";
-      const articleURL = getCanonicalURL();
-
-      // Update DOM
+      
       document.title = fullTitle;
       seoTitle.textContent = title;
       seoDesc.textContent = desc;
 
-      // Update Meta & Canonical
-      setTag('meta[name="description"]', "content", desc);
-      canonicalLink.href = articleURL;
+      // Ubah URL address bar ke -> /article/judul-artikelnya
+      updateBrowserURL("ArticleDetail", title);
 
-      // Update Open Graph
+      const articleURL = window.location.href;
+      setTag('meta[name="description"]', "content", desc);
       setTag('meta[property="og:type"]', "content", "article");
       setTag('meta[property="og:title"]', "content", fullTitle);
       setTag('meta[property="og:description"]', "content", desc);
       setTag('meta[property="og:url"]', "content", articleURL);
-
-      // Update / Create Schema Article
-      const articleSchema = {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": title,
-        "description": desc,
-        "mainEntityOfPage": {
-          "@type": "WebPage",
-          "@id": articleURL
-        },
-        "publisher": {
-          "@type": "Organization",
-          "name": "Felvan Course",
-          "url": "https://www.felvancourse.online/"
-        }
-      };
 
       let schemaScript = document.getElementById("articleSchema");
       if (!schemaScript) {
@@ -213,14 +218,19 @@
         schemaScript.id = "articleSchema";
         document.head.appendChild(schemaScript);
       }
-      schemaScript.textContent = JSON.stringify(articleSchema);
+      schemaScript.textContent = JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": title,
+        "description": desc,
+        "mainEntityOfPage": { "@type": "WebPage", "@id": articleURL },
+        "publisher": { "@type": "Organization", "name": "Felvan Course", "url": "https://www.felvancourse.online/" }
+      });
     }
 
     // Pendaftaran Service Worker
     if ("serviceWorker" in navigator) {
-      window.addEventListener("load", function () {
-        navigator.serviceWorker.register("/sw.js");
-      });
+      window.addEventListener("load", function () { navigator.serviceWorker.register("/sw.js"); });
     }
 
     // Inisialisasi OneSignal
@@ -233,83 +243,56 @@
       });
     });
 
-    // Event Listener Pesan dari Iframe GAS
+    // 3. EVENT LISTENER PESAN DARI IFRAME GAS
     window.addEventListener("message", function (ev) {
       let host = "";
-      try {
-        host = new URL(ev.origin).hostname;
-      } catch (e) {
-        return;
-      }
-
+      try { host = new URL(ev.origin).hostname; } catch (e) { return; }
       const ok = host === "script.google.com" || host.endsWith(".googleusercontent.com");
-      if (!ok) return;
-      if (ev.source !== appFrame.contentWindow) return;
+      if (!ok || ev.source !== appFrame.contentWindow) return;
 
       const d = ev.data || {};
 
-      // Proses Login
+      // Fitur Notifikasi Push OneSignal
       if (d.type === "felvan-login" && d.email) {
         OneSignalDeferred.push(async function (OneSignal) {
           await OneSignal.login(d.email);
-
-          const tags = {
-            nama: String(d.name || ""),
-            email: String(d.email),
-            role: String(d.role || ""),
-            kelas: String(d.className || ""),
-            status_akun: String(d.status || "")
-          };
-
-          String(d.classId || "")
-            .split(",")
-            .map(function (x) { return x.trim(); })
-            .forEach(function (id) {
-              if (id && id.indexOf("PRG") !== 0) {
-                tags["kelas_" + id] = "1";
-              }
-            });
-
+          const tags = { nama: String(d.name || ""), email: String(d.email), role: String(d.role || ""), kelas: String(d.className || ""), status_akun: String(d.status || "") };
+          String(d.classId || "").split(",").map(x => x.trim()).forEach(id => { if (id && id.indexOf("PRG") !== 0) tags["kelas_" + id] = "1"; });
           OneSignal.User.addTags(tags);
           OneSignal.Slidedown.promptPush();
         });
       }
-
-      // Proses Logout
       else if (d.type === "felvan-logout") {
-        OneSignalDeferred.push(async function (OneSignal) {
-          await OneSignal.logout();
-        });
+        OneSignalDeferred.push(async function (OneSignal) { await OneSignal.logout(); });
       }
-
-      // Proses Artikel
+      // Membuka Artikel Ter-intercept URLnya
       else if (d.type === "felvan-article" && d.title) {
         updateArticleMetadata(d);
+      }
+      // Membuka Quiz Ter-intercept URLnya (contoh: jika iframe men-trigger felvan-quiz)
+      else if (d.type === "felvan-quiz" && d.title) {
+        const fullTitle = cleanText(d.title, 120) + " | Felvan Course";
+        document.title = fullTitle;
+        updateBrowserURL("QuizPlayer", d.title);
+      }
+      // Route Navigator dinamis dari GAS
+      else if (d.type === "felvan-navigate" && d.view) {
+        if(d.title) document.title = cleanText(d.title, 120) + " | Felvan Course";
+        updateBrowserURL(d.view, d.title);
       }
     });
 
     // PWA Install Prompt
     let deferredPrompt;
     const installBtn = document.getElementById("installBtn");
-
     window.addEventListener("beforeinstallprompt", function (e) {
-      e.preventDefault();
-      deferredPrompt = e;
-      installBtn.style.display = "block";
+      e.preventDefault(); deferredPrompt = e; installBtn.style.display = "block";
     });
-
     installBtn.addEventListener("click", async function () {
       installBtn.style.display = "none";
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        await deferredPrompt.userChoice;
-        deferredPrompt = null;
-      }
+      if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; }
     });
-
-    window.addEventListener("appinstalled", function () {
-      installBtn.style.display = "none";
-    });
+    window.addEventListener("appinstalled", function () { installBtn.style.display = "none"; });
   </script>
 </body>
 </html>
