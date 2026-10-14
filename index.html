@@ -2,17 +2,16 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
-<!-- SEO -->
-<title>Felvan Course - Kursus Bahasa Inggris Online</title>
+  <!-- SEO -->
+  <title>Felvan Course - Kursus Bahasa Inggris Online</title>
   <meta name="application-name" content="Felvan Course">
-<meta name="description" content="Belajar Bahasa Inggris online interaktif lewat Zoom meeting bersama Felvan Course. Siap berbicara Bahasa Inggris dengan percaya diri dari mana saja? Yuk gabung!">
-<link rel="canonical" href="https://felvancourse.online/">
-<meta name="robots" content="index, follow">
+  <meta name="description" content="Belajar Bahasa Inggris online interaktif lewat Zoom meeting bersama Felvan Course. Siap berbicara Bahasa Inggris dengan percaya diri dari mana saja? Yuk gabung!">
+  <link rel="canonical" href="https://felvancourse.online/">
+  <meta name="robots" content="index, follow">
 
-  <!-- Open Graph (tampilan saat link dibagikan) -->
   <!-- Google Site Name -->
   <script type="application/ld+json" id="websiteSchema">
   {
@@ -25,26 +24,22 @@
   </script>
 
   <!-- Open Graph -->
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Felvan Course">
-<meta property="og:title" content="Felvan Course - Kursus Bahasa Inggris Online via Zoom">
-<meta property="og:description" content="Belajar Bahasa Inggris online interaktif lewat Zoom meeting bersama Felvan Course. Gabung dan belajar dari mana saja.">
-<meta property="og:url" content="https://felvancourse.online/">
-<meta property="og:image" content="https://iili.io/CYBXpR4.png">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Felvan Course">
+  <meta property="og:title" content="Felvan Course - Kursus Bahasa Inggris Online via Zoom">
+  <meta property="og:description" content="Belajar Bahasa Inggris online interaktif lewat Zoom meeting bersama Felvan Course. Gabung dan belajar dari mana saja.">
+  <meta property="og:url" content="https://felvancourse.online/">
+  <meta property="og:image" content="https://iili.io/CYBXpR4.png">
 
-<link rel="icon" href="https://iili.io/CYBXpR4.png">
+  <link rel="icon" href="https://iili.io/CYBXpR4.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1a73e8">
+  <link rel="apple-touch-icon" href="/icon-192.png">
 
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#1a73e8">
-<link rel="apple-touch-icon" href="/icon-192.png">
-
-  <!-- Load OneSignal SDK -->
   <!-- OneSignal SDK -->
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
-<style>
-    html, body { margin: 0; height: 100%; overflow: hidden; background: #fff; }
-    .wrap { position: fixed; inset: 0; overflow: hidden; }
+  <style>
     html, body {
       margin: 0;
       height: 100%;
@@ -58,119 +53,104 @@
       overflow: hidden;
     }
 
-iframe {
-position: absolute;
-top: -10px;
-left: 0;
-width: 100%;
-height: calc(100% + 10px);
-border: 0;
-}
+    iframe {
+      position: absolute;
+      top: -10px;
+      left: 0;
+      width: 100%;
+      height: calc(100% + 10px);
+      border: 0;
+    }
 
-@media (max-width: 600px) {
-      iframe { top: -10px; height: calc(100% + 10px); }
+    @media (max-width: 600px) {
       iframe {
         top: -10px;
         height: calc(100% + 10px);
       }
-}
+    }
 
-    /* Teks untuk mesin pencari & screen reader, tidak tampil di layar */
     /* Teks SEO dan screen reader */
-.sr-only {
-position: absolute;
-width: 1px;
-height: 1px;
-margin: -1px;
-padding: 0;
-overflow: hidden;
-clip: rect(0, 0, 0, 0);
-white-space: nowrap;
-border: 0;
-}
-</style>
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  </style>
 </head>
 
 <body>
-  <!-- Konten yang bisa dibaca Google (iframe GAS tidak terbaca sebagai konten halaman ini) -->
   <!-- Konten SEO halaman utama -->
-<div class="sr-only">
-<h1 id="seoTitle">Felvan Course - Kursus Bahasa Inggris Online</h1>
-    <p id="seoDesc">Belajar Bahasa Inggris online interaktif lewat Zoom meeting. Siap berbicara Bahasa Inggris dengan percaya diri dari mana saja? Yuk gabung di Felvan Course!</p>
+  <div class="sr-only">
+    <h1 id="seoTitle">Felvan Course - Kursus Bahasa Inggris Online</h1>
     <p id="seoDesc">
       Belajar Bahasa Inggris online interaktif lewat Zoom meeting.
       Siap berbicara Bahasa Inggris dengan percaya diri dari mana saja?
       Yuk gabung di Felvan Course!
     </p>
-</div>
+  </div>
 
-<div class="wrap">
-    <!-- allow: autoplay/encrypted-media/picture-in-picture/fullscreen diteruskan sampai ke iframe YouTube di dalam GAS -->
-    <iframe id="app" title="Felvan Course System" allow="autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; clipboard-write; camera; microphone; geolocation" allowfullscreen></iframe>
+  <div class="wrap">
     <iframe
       id="app"
       title="Felvan Course System"
       allow="autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; clipboard-write; camera; microphone; geolocation"
       allowfullscreen>
     </iframe>
-</div>
+  </div>
 
-  <!-- data-nosnippet harus di div/span/section (tidak berlaku di button). Teks tombol diisi lewat JS. -->
   <!-- Tombol instalasi PWA -->
-<div data-nosnippet>
-    <button id="installBtn" style="display:none;position:fixed;bottom:16px;right:16px;z-index:9999;padding:12px 18px;border:0;border-radius:24px;background:#1a73e8;color:#fff;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:pointer"></button>
+  <div data-nosnippet>
     <button
       id="installBtn"
       style="display:none;position:fixed;bottom:16px;right:16px;z-index:9999;padding:12px 18px;border:0;border-radius:24px;background:#1a73e8;color:#fff;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:pointer">
     </button>
-</div>
+  </div>
 
-<script>
-    // URL Web App Google Apps Script milikmu
+  <script>
     // URL Web App Google Apps Script
-const GAS = "https://script.google.com/macros/s/AKfycbyMH2Tqm_eGNDB-V-EB6x9wMT1L59tOevuOICUpc-l-bu8bSw7BufMT1oJZrDK3hRe3kQ/exec";
+    const GAS = "https://script.google.com/macros/s/AKfycbyMH2Tqm_eGNDB-V-EB6x9wMT1L59tOevuOICUpc-l-bu8bSw7BufMT1oJZrDK3hRe3kQ/exec";
 
     // Muat aplikasi beserta parameter URL
-document.getElementById("app").src = GAS + window.location.search;
+    document.getElementById("app").src = GAS + window.location.search;
 
-    // Fungsi bantu: ubah isi sebuah tag di <head>
     // Fungsi untuk memperbarui metadata
-function setTag(selector, attr, value) {
-var el = document.querySelector(selector);
-      if (el && value) el.setAttribute(attr, value);
+    function setTag(selector, attr, value) {
+      var el = document.querySelector(selector);
 
       if (el && value !== undefined && value !== null) {
         el.setAttribute(attr, value);
       }
-}
+    }
 
     // Service Worker
-if ("serviceWorker" in navigator) {
-window.addEventListener("load", function () {
-navigator.serviceWorker.register("/sw.js");
-});
-}
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("/sw.js");
+      });
+    }
 
-// Inisialisasi OneSignal
-window.OneSignalDeferred = window.OneSignalDeferred || [];
+    // Inisialisasi OneSignal
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
 
-OneSignalDeferred.push(async function (OneSignal) {
-await OneSignal.init({
-appId: "8530aeec-868f-45ef-ba6c-2613f17de0b5",
-serviceWorkerPath: "/sw.js",
-        serviceWorkerParam: { scope: "/" }
+    OneSignalDeferred.push(async function (OneSignal) {
+      await OneSignal.init({
+        appId: "8530aeec-868f-45ef-ba6c-2613f17de0b5",
+        serviceWorkerPath: "/sw.js",
         serviceWorkerParam: {
           scope: "/"
         }
-});
-});
+      });
+    });
 
-    // LISTENER: Menangkap pesan dari iframe (GAS) saat user Login / Logout
     // Menerima pesan dari iframe GAS
-window.addEventListener("message", function (ev) {
-let host = "";
-      try { host = new URL(ev.origin).hostname; } catch (e) { return; }
-      const ok = host === "script.google.com" || host.endsWith(".googleusercontent.com");
+    window.addEventListener("message", function (ev) {
+      let host = "";
 
       try {
         host = new URL(ev.origin).hostname;
@@ -182,28 +162,23 @@ let host = "";
         host === "script.google.com" ||
         host.endsWith(".googleusercontent.com");
 
-if (!ok) return;
+      if (!ok) return;
 
-const d = ev.data || {};
+      const d = ev.data || {};
 
-      // Jika murid berhasil login
       // LOGIN
-if (d.type === "felvan-login" && d.email) {
-OneSignalDeferred.push(async function (OneSignal) {
-          await OneSignal.login(d.email); // Menghubungkan email dengan device
+      if (d.type === "felvan-login" && d.email) {
+        OneSignalDeferred.push(async function (OneSignal) {
           await OneSignal.login(d.email);
 
-const tags = {
-nama: String(d.name || ""),
-email: String(d.email),
-role: String(d.role || ""),
-kelas: String(d.className || ""),
-status_akun: String(d.status || "")
-};
+          const tags = {
+            nama: String(d.name || ""),
+            email: String(d.email),
+            role: String(d.role || ""),
+            kelas: String(d.className || ""),
+            status_akun: String(d.status || "")
+          };
 
-          String(d.classId || "").split(",").map(function (x) { return x.trim(); }).forEach(function (id) {
-            if (id && id.indexOf("PRG") !== 0) tags["kelas_" + id] = "1";
-          });
           String(d.classId || "")
             .split(",")
             .map(function (x) {
@@ -215,48 +190,43 @@ status_akun: String(d.status || "")
               }
             });
 
-OneSignal.User.addTags(tags);
-          OneSignal.Slidedown.promptPush(); // Minta izin notifikasi
+          OneSignal.User.addTags(tags);
           OneSignal.Slidedown.promptPush();
-});
-}
-      // Jika murid logout
+        });
+      }
 
       // LOGOUT
-else if (d.type === "felvan-logout") {
-OneSignalDeferred.push(async function (OneSignal) {
-await OneSignal.logout();
-});
-}
-      // Jika halaman detail artikel selesai dimuat di dalam iframe
+      else if (d.type === "felvan-logout") {
+        OneSignalDeferred.push(async function (OneSignal) {
+          await OneSignal.logout();
+        });
+      }
 
       // ARTIKEL
-else if (d.type === "felvan-article" && d.title) {
-var title = String(d.title).slice(0, 120);
-var desc = String(d.description || "").slice(0, 160);
+      else if (d.type === "felvan-article" && d.title) {
+        var title = String(d.title).slice(0, 120);
+        var desc = String(d.description || "").slice(0, 160);
 
-var fullTitle = title + " - Felvan Course";
+        var fullTitle = title + " - Felvan Course";
 
-var url = d.id
-          ? location.origin + "/?v=ArticleDetail&id=" + encodeURIComponent(String(d.id))
+        var url = d.id
           ? location.origin + "/?v=ArticleDetail&id=" +
             encodeURIComponent(String(d.id))
-: location.origin + "/" + location.search;
+          : location.origin + "/" + location.search;
 
         // Perbarui judul halaman
-document.title = fullTitle;
+        document.title = fullTitle;
 
         // Perbarui konten SEO
-document.getElementById("seoTitle").textContent = title;
-        if (desc) document.getElementById("seoDesc").textContent = desc;
+        document.getElementById("seoTitle").textContent = title;
         document.getElementById("seoDesc").textContent = desc;
 
         // Perbarui meta description, canonical, dan Open Graph
-setTag('meta[name="description"]', "content", desc);
-setTag('link[rel="canonical"]', "href", url);
-setTag('meta[property="og:title"]', "content", fullTitle);
-setTag('meta[property="og:description"]', "content", desc);
-setTag('meta[property="og:url"]', "content", url);
+        setTag('meta[name="description"]', "content", desc);
+        setTag('link[rel="canonical"]', "href", url);
+        setTag('meta[property="og:title"]', "content", fullTitle);
+        setTag('meta[property="og:description"]', "content", desc);
+        setTag('meta[property="og:url"]', "content", url);
 
         // Perbarui schema artikel secara dinamis
         var articleSchema = {
@@ -285,35 +255,34 @@ setTag('meta[property="og:url"]', "content", url);
         }
 
         schemaScript.textContent = JSON.stringify(articleSchema);
-}
-});
+      }
+    });
 
-    // PWA Install Prompt
     // PWA INSTALL PROMPT
-let deferredPrompt;
-const installBtn = document.getElementById("installBtn");
+    let deferredPrompt;
+    const installBtn = document.getElementById("installBtn");
 
-window.addEventListener("beforeinstallprompt", function (e) {
-e.preventDefault();
-deferredPrompt = e;
+    window.addEventListener("beforeinstallprompt", function (e) {
+      e.preventDefault();
+      deferredPrompt = e;
 
-installBtn.textContent = "Install Aplikasi";
-installBtn.style.display = "block";
-});
+      installBtn.textContent = "Install Aplikasi";
+      installBtn.style.display = "block";
+    });
 
-installBtn.addEventListener("click", async function () {
-installBtn.style.display = "none";
+    installBtn.addEventListener("click", async function () {
+      installBtn.style.display = "none";
 
-if (deferredPrompt) {
-deferredPrompt.prompt();
-await deferredPrompt.userChoice;
-deferredPrompt = null;
-}
-});
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+      }
+    });
 
-window.addEventListener("appinstalled", function () {
-installBtn.style.display = "none";
-});
-</script>
+    window.addEventListener("appinstalled", function () {
+      installBtn.style.display = "none";
+    });
+  </script>
 </body>
 </html>
