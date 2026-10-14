@@ -134,8 +134,8 @@
         const pathParts = currentPath.split('/');
         if (pathParts.length > 2) {
             const lastPart = pathParts[pathParts.length - 1];
-            // Match trailing digits as ID
-            const match = lastPart.match(/-(\d+)$/);
+            // Match trailing huruf & angka (seperti ART123 atau ROW5) sebagai ID
+            const match = lastPart.match(/-([a-zA-Z0-9]+)$/);
             if(match) urlParams.set('id', match[1]);
         }
       }
@@ -145,8 +145,8 @@
         const pathParts = currentPath.split('/');
         if (pathParts.length > 2) {
             const lastPart = pathParts[pathParts.length - 1];
-            // Match trailing digits as ID
-            const match = lastPart.match(/-(\d+)$/);
+            // Match trailing huruf & angka sebagai ID (seperti PST12345)
+            const match = lastPart.match(/-([a-zA-Z0-9]+)$/);
             if(match) urlParams.set('postId', match[1]);
         }
       }
