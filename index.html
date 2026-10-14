@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -116,8 +115,43 @@
     // URL Web App Google Apps Script
     const GAS = "https://script.google.com/macros/s/AKfycbyMH2Tqm_eGNDB-V-EB6x9wMT1L59tOevuOICUpc-l-bu8bSw7BufMT1oJZrDK3hRe3kQ/exec";
 
+    // Alamat cantik di browser -> halaman Apps Script (parameter v)
+    const ROUTES = {
+      "/classroom": "Index",
+      "/dashboard": "Index",
+      "/admin": "Admin"
+    };
+
+    // Kebalikannya: halaman Apps Script -> alamat cantik yang tampil di browser
+    const PRETTY = {
+      "Index": "/classroom",
+      "Admin": "/admin"
+    };
+
     // Muat aplikasi beserta parameter URL
-    document.getElementById("app").src = GAS + window.location.search;
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var path = window.location.pathname.replace(/\/+$/, "").toLowerCase() || "/";
+
+      var src = GAS + window.location.search;
+
+      // /classroom, /dashboard, /admin -> tambahkan ?v=... otomatis untuk iframe
+      if (ROUTES[path] && !params.get("v")) {
+        params.set("v", ROUTES[path]);
+        src = GAS + "?" + params.toString();
+      }
+
+      document.getElementById("app").src = src;
+
+      // Link lama /?v=Index dirapikan jadi /classroom (parameter lain tetap dibawa)
+      var page = params.get("v");
+      if (path === "/" && PRETTY[page]) {
+        var rest = new URLSearchParams(window.location.search);
+        rest.delete("v");
+        var restQs = rest.toString();
+        history.replaceState(null, "", PRETTY[page] + (restQs ? "?" + restQs : "") + window.location.hash);
+      }
+    })();
 
     // Fungsi untuk memperbarui metadata
     function setTag(selector, attr, value) {
