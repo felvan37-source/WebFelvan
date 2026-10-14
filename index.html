@@ -9,8 +9,8 @@
   <title>Felvan Course - Kursus Bahasa Inggris Online</title>
   <meta name="application-name" content="Felvan Course">
   <meta name="description" content="Belajar Bahasa Inggris online interaktif lewat Zoom meeting bersama Felvan Course. Siap berbicara Bahasa Inggris dengan percaya diri dari mana saja? Yuk gabung!">
-  <link rel="canonical" href="https://felvancourse.online/">
   <meta name="robots" content="index, follow">
+  <link id="canonicalLink" rel="canonical" href="https://felvancourse.online/">
 
   <!-- Google Site Name -->
   <script type="application/ld+json" id="websiteSchema">
@@ -116,16 +116,111 @@
     // URL Web App Google Apps Script
     const GAS = "https://script.google.com/macros/s/AKfycbyMH2Tqm_eGNDB-V-EB6x9wMT1L59tOevuOICUpc-l-bu8bSw7BufMT1oJZrDK3hRe3kQ/exec";
 
-    // Muat aplikasi beserta parameter URL
-    document.getElementById("app").src = GAS + window.location.search;
+    // Elemen aplikasi
+    const appFrame = document.getElementById("app");
+    const seoTitle = document.getElementById("seoTitle");
+    const seoDesc = document.getElementById("seoDesc");
+    const canonicalLink = document.getElementById("canonicalLink");
 
-    // Fungsi untuk memperbarui metadata
+    // Deteksi apakah URL membuka halaman artikel
+    const initialParams = new URLSearchParams(window.location.search);
+    const isArticleRoute =
+      initialParams.get("v") === "ArticleDetail" &&
+      Boolean(initialParams.get("id"));
+
+    // URL canonical berdasarkan jenis halaman
+    // Homepage tetap menggunakan URL utama.
+    // Halaman artikel menggunakan URL artikel masing-masing.
+    function getCanonicalURL() {
+      if (isArticleRoute) {
+        const articleURL = new URL("/", window.location.origin);
+        articleURL.searchParams.set("v", "ArticleDetail");
+        articleURL.searchParams.set("id", initialParams.get("id"));
+        return articleURL.href;
+      }
+
+      return "https://felvancourse.online/";
+    }
+
+    canonicalLink.href = getCanonicalURL();
+
+    // Muat aplikasi beserta parameter URL
+    appFrame.src = GAS + window.location.search;
+
+    // Fungsi memperbarui metadata
     function setTag(selector, attr, value) {
-      var el = document.querySelector(selector);
+      const el = document.querySelector(selector);
 
       if (el && value !== undefined && value !== null) {
         el.setAttribute(attr, value);
       }
+    }
+
+    // Normalisasi teks metadata
+    function cleanText(value, maxLength) {
+      return String(value || "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, maxLength);
+    }
+
+    // Format judul artikel
+    function updateArticleMetadata(data) {
+      const title = cleanText(data.title, 120);
+      const desc = cleanText(data.description, 160);
+
+      if (!title) return;
+
+      // Hindari menimpa metadata artikel dengan data yang salah
+      if (isArticleRoute && data.id) {
+        if (String(data.id) !== initialParams.get("id")) return;
+      }
+
+      const fullTitle = title + " | Felvan Course";
+      const articleURL = getCanonicalURL();
+
+      // Judul dan deskripsi dokumen
+      document.title = fullTitle;
+      seoTitle.textContent = title;
+      seoDesc.textContent = desc;
+
+      // Meta description dan canonical
+      setTag('meta[name="description"]', "content", desc);
+      canonicalLink.href = articleURL;
+
+      // Open Graph
+      setTag('meta[property="og:type"]', "content", "article");
+      setTag('meta[property="og:title"]', "content", fullTitle);
+      setTag('meta[property="og:description"]', "content", desc);
+      setTag('meta[property="og:url"]', "content", articleURL);
+
+      // Schema Article
+      const articleSchema = {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": title,
+        "description": desc,
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": articleURL
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Felvan Course",
+          "url": "https://felvancourse.online/"
+        }
+      };
+
+      let schemaScript = document.getElementById("articleSchema");
+
+      if (!schemaScript) {
+        schemaScript = document.createElement("script");
+        schemaScript.type = "application/ld+json";
+        schemaScript.id = "articleSchema";
+        document.head.appendChild(schemaScript);
+      }
+
+      schemaScript.textContent = JSON.stringify(articleSchema);
     }
 
     // Service Worker
@@ -163,6 +258,9 @@
         host.endsWith(".googleusercontent.com");
 
       if (!ok) return;
+
+      // Pastikan pesan berasal dari iframe aplikasi
+      if (ev.source !== appFrame.contentWindow) return;
 
       const d = ev.data || {};
 
@@ -204,57 +302,7 @@
 
       // ARTIKEL
       else if (d.type === "felvan-article" && d.title) {
-        var title = String(d.title).slice(0, 120);
-        var desc = String(d.description || "").slice(0, 160);
-
-        var fullTitle = title + " - Felvan Course";
-
-        var url = d.id
-          ? location.origin + "/?v=ArticleDetail&id=" +
-            encodeURIComponent(String(d.id))
-          : location.origin + "/" + location.search;
-
-        // Perbarui judul halaman
-        document.title = fullTitle;
-
-        // Perbarui konten SEO
-        document.getElementById("seoTitle").textContent = title;
-        document.getElementById("seoDesc").textContent = desc;
-
-        // Perbarui meta description, canonical, dan Open Graph
-        setTag('meta[name="description"]', "content", desc);
-        setTag('link[rel="canonical"]', "href", url);
-        setTag('meta[property="og:title"]', "content", fullTitle);
-        setTag('meta[property="og:description"]', "content", desc);
-        setTag('meta[property="og:url"]', "content", url);
-
-        // Perbarui schema artikel secara dinamis
-        var articleSchema = {
-          "@context": "https://schema.org",
-          "@type": "Article",
-          "headline": title,
-          "description": desc,
-          "mainEntityOfPage": {
-            "@type": "WebPage",
-            "@id": url
-          },
-          "publisher": {
-            "@type": "Organization",
-            "name": "Felvan Course",
-            "url": "https://felvancourse.online/"
-          }
-        };
-
-        var schemaScript = document.getElementById("articleSchema");
-
-        if (!schemaScript) {
-          schemaScript = document.createElement("script");
-          schemaScript.type = "application/ld+json";
-          schemaScript.id = "articleSchema";
-          document.head.appendChild(schemaScript);
-        }
-
-        schemaScript.textContent = JSON.stringify(articleSchema);
+        updateArticleMetadata(d);
       }
     });
 
