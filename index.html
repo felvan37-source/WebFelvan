@@ -128,8 +128,28 @@
       else if (currentPath.startsWith("/dashboard-soal")) view = "QuizEditor";
       else if (currentPath.startsWith("/hasil-siswa")) view = "Verification";
       else if (currentPath.startsWith("/dashboard-article")) view = "AdminArticle";
-      else if (currentPath.startsWith("/article/")) view = "ArticleDetail";
-      else if (currentPath.startsWith("/quiz/")) view = "QuizPlayer";
+      else if (currentPath.startsWith("/article/")) {
+        view = "ArticleDetail";
+        // Extract ID from path if possible, assuming format /article/slug-id
+        const pathParts = currentPath.split('/');
+        if (pathParts.length > 2) {
+            const lastPart = pathParts[pathParts.length - 1];
+            // Match trailing digits as ID
+            const match = lastPart.match(/-(\d+)$/);
+            if(match) urlParams.set('id', match[1]);
+        }
+      }
+      else if (currentPath.startsWith("/quiz/")) {
+        view = "QuizPlayer";
+        // Extract ID from path if possible, assuming format /quiz/slug-id
+        const pathParts = currentPath.split('/');
+        if (pathParts.length > 2) {
+            const lastPart = pathParts[pathParts.length - 1];
+            // Match trailing digits as ID
+            const match = lastPart.match(/-(\d+)$/);
+            if(match) urlParams.set('postId', match[1]);
+        }
+      }
       else view = "LandingPage"; // Fallback aman
     }
 
@@ -143,7 +163,7 @@
     appFrame.src = GAS + "?" + urlParams.toString();
 
     // 2. FUNGSI UPDATE URL BROWSER (Merapikan address bar saat halaman berubah)
-    function updateBrowserURL(pageView, title) {
+    function updateBrowserURL(pageView, title, id = null) {
       let newPath = "/";
       let newSearch = new URLSearchParams(window.location.search);
       newSearch.delete("v"); // Sembunyikan '?v=' agar rapi
@@ -156,10 +176,14 @@
       else if (pageView === "AdminArticle") newPath = "/dashboard-article";
       else if (pageView === "ArticleDetail") {
         let slug = title ? slugify(title) : "detail";
+        // Tambahkan ID ke slug jika tersedia agar URL unik dan bisa di-parse kembali
+        if (id) slug += `-${id}`; 
         newPath = "/article/" + slug;
       }
       else if (pageView === "QuizPlayer") {
         let slug = title ? slugify(title) : "play";
+        // Tambahkan ID ke slug jika tersedia agar URL unik dan bisa di-parse kembali
+        if (id) slug += `-${id}`;
         newPath = "/quiz/" + slug;
       } else {
         newPath = currentPath; 
@@ -202,7 +226,8 @@
       seoTitle.textContent = title;
       seoDesc.textContent = desc;
 
-      updateBrowserURL("ArticleDetail", title);
+      // Teruskan ID artikel (data.id) ke updateBrowserURL
+      updateBrowserURL("ArticleDetail", title, data.id);
 
       const articleURL = window.location.href;
       setTag('meta[name="description"]', "content", desc);
@@ -255,7 +280,8 @@
       // Trigger perbarui URL untuk Kuis (Opsional jika Anda pasang postMessage di Player Kuis)
       else if (d.type === "felvan-quiz" && d.title) {
         document.title = cleanText(d.title, 120) + " | Felvan Course";
-        updateBrowserURL("QuizPlayer", d.title);
+        // Teruskan ID quiz (d.id atau d.postId) ke updateBrowserURL
+        updateBrowserURL("QuizPlayer", d.title, d.id || d.postId);
       }
       // Routing dinamis manual dari dalam Google Apps Script
       else if (d.type === "felvan-navigate" && d.view) {
