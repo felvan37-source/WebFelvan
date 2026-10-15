@@ -7,6 +7,7 @@
   <!-- SEO -->
   <title>Felvan Course - Kursus Bahasa Inggris Online</title>
   <meta name="application-name" content="Felvan Course">
+  <meta name="apple-mobile-web-app-title" content="Felvan Course">
   <meta name="description" content="Belajar Bahasa Inggris online interaktif lewat Zoom meeting bersama Felvan Course. Siap berbicara Bahasa Inggris dengan percaya diri dari mana saja? Yuk gabung!">
   <meta name="robots" content="index, follow">
   <link id="canonicalLink" rel="canonical" href="https://www.felvancourse.online/">
@@ -28,13 +29,24 @@
   <meta property="og:title" content="Felvan Course - Kursus Bahasa Inggris Online via Zoom">
   <meta property="og:description" content="Belajar Bahasa Inggris online interaktif lewat Zoom meeting bersama Felvan Course. Gabung dan belajar dari mana saja.">
   <meta property="og:url" content="https://www.felvancourse.online/">
-  <meta property="og:image" content="https://iili.io/CYBXpR4.png">
+  <meta property="og:image" content="https://www.felvancourse.online/og-image.png">
 
-  <!-- Icons & PWA -->
-  <link rel="icon" href="https://iili.io/CYBXpR4.png">
+  <!-- ========================================== -->
+  <!-- PERBAIKAN FAVICON UNTUK GOOGLE SEARCH -->
+  <!-- ========================================== -->
+  <!-- 1. Ikon standar untuk browser (harus .ico diletakkan di root) -->
+  <link rel="shortcut icon" href="/favicon.ico">
+  
+  <!-- 2. Ikon khusus untuk Google Search (Wajib kelipatan 48px, idealnya 96x96px) -->
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+  
+  <!-- 3. Ikon untuk perangkat Apple / iOS -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <!-- ========================================== -->
+
+  <!-- PWA & Theme -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#1a73e8">
-  <link rel="apple-touch-icon" href="/icon-192.png">
 
   <!-- OneSignal SDK -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
@@ -84,7 +96,6 @@
   <div class="sr-only">
     <h1 id="seoTitle">Felvan Course - Kursus Bahasa Inggris Online</h1>
     <p id="seoDesc">Belajar Bahasa Inggris online interaktif lewat Zoom meeting. Siap berbicara Bahasa Inggris dengan percaya diri dari mana saja? Yuk gabung di Felvan Course!</p>
-    <!-- DIV BARU UNTUK MENAMPUNG KONTEN ARTIKEL -->
     <div id="seoBody"></div> 
   </div>
 
@@ -106,7 +117,6 @@
   </div>
 
   <script>
-    // URL Web App Google Apps Script
     const GAS = "https://script.google.com/macros/s/AKfycbyMH2Tqm_eGNDB-V-EB6x9wMT1L59tOevuOICUpc-l-bu8bSw7BufMT1oJZrDK3hRe3kQ/exec";
 
     function slugify(text) {
@@ -116,15 +126,11 @@
         .replace(/\-\-+/g, '-');    
     }
 
-    // 1. ROUTING CLIENT-SIDE (Mencegah tombol mati)
     let currentPath = window.location.pathname;
     let urlParams = new URLSearchParams(window.location.search);
-    
-    // PRIORITAS: Jika tombol dipencet, URL akan punya param ?v= 
     let view = urlParams.get("v"); 
 
     if (!view) {
-      // Jika halaman direfresh manual dan parameter hilang, baca ulang dari path Vercel
       if (currentPath === "/home" || currentPath === "/") view = "LandingPage";
       else if (currentPath === "/dashboard") view = "Index";
       else if (currentPath === "/admin") view = "Admin";
@@ -149,10 +155,10 @@
             if(match) urlParams.set('postId', match[1]);
         }
       }
-      else view = "LandingPage"; // Fallback aman
+      else view = "LandingPage";
     }
 
-    // --- FITUR BARU: FETCH DATA ARTIKEL KHUSUS UNTUK GOOGLEBOT ---
+    // CEGAT DATA ARTIKEL UNTUK GOOGLEBOT
     if (view === "ArticleDetail" && urlParams.has("id")) {
       const articleId = urlParams.get("id");
       const apiURL = GAS + "?api=getArticle&id=" + articleId;
@@ -162,16 +168,11 @@
         .then(data => {
           if (!data.error) {
             const fullTitle = data.title + " | Felvan Course";
-            
-            // Ubah Metadata
             document.title = fullTitle;
             document.getElementById("seoTitle").textContent = data.title;
             document.getElementById("seoDesc").textContent = data.description;
-            
-            // SUNTIKKAN TEKS KE HTML AGAR TERBACA GOOGLEBOT
             document.getElementById("seoBody").innerHTML = data.content;
 
-            // Update Meta Tags
             const metaDesc = document.querySelector('meta[name="description"]');
             const ogTitle = document.querySelector('meta[property="og:title"]');
             const ogDesc = document.querySelector('meta[property="og:description"]');
@@ -180,15 +181,12 @@
             if(ogTitle) ogTitle.setAttribute("content", fullTitle);
             if(ogDesc) ogDesc.setAttribute("content", data.description);
             
-            // Set Canonical URL berdasarkan path saat ini
             document.getElementById("canonicalLink").href = window.location.origin + window.location.pathname;
           }
         })
         .catch(err => console.error("Gagal memuat SEO data", err));
     }
-    // -----------------------------------------------------------
 
-    // Pasang parameter ke iframe
     urlParams.set("v", view);
     const appFrame = document.getElementById("app");
     const seoTitle = document.getElementById("seoTitle");
@@ -197,11 +195,10 @@
 
     appFrame.src = GAS + "?" + urlParams.toString();
 
-    // 2. FUNGSI UPDATE URL BROWSER (Merapikan address bar saat halaman berubah)
     function updateBrowserURL(pageView, title, id = null) {
       let newPath = "/";
       let newSearch = new URLSearchParams(window.location.search);
-      newSearch.delete("v"); // Sembunyikan '?v=' agar rapi
+      newSearch.delete("v"); 
 
       if (pageView === "LandingPage") newPath = "/";
       else if (pageView === "Index") newPath = "/dashboard";
@@ -232,12 +229,10 @@
       canonicalLink.href = window.location.origin + window.location.pathname; 
     }
 
-    // Rapikan URL secara otomatis di awal
     if (["LandingPage", "Index", "Admin", "QuizEditor", "Verification", "AdminArticle"].includes(view)) {
        updateBrowserURL(view, document.title);
     }
 
-    // Fungsi memperbarui metadata
     function setTag(selector, attr, value) {
       const el = document.querySelector(selector);
       if (el && value) el.setAttribute(attr, value);
@@ -268,12 +263,10 @@
       setTag('meta[property="og:url"]', "content", articleURL);
     }
 
-    // Pendaftaran Service Worker
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () { navigator.serviceWorker.register("/sw.js"); });
     }
 
-    // Inisialisasi OneSignal
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function (OneSignal) {
       await OneSignal.init({
@@ -283,7 +276,6 @@
       });
     });
 
-    // 3. EVENT LISTENER KOMUNIKASI IFRAME
     window.addEventListener("message", function (ev) {
       let host = "";
       try { host = new URL(ev.origin).hostname; } catch (e) { return; }
@@ -317,7 +309,6 @@
       }
     });
 
-    // PWA Install Prompt
     let deferredPrompt;
     const installBtn = document.getElementById("installBtn");
     window.addEventListener("beforeinstallprompt", function (e) {
