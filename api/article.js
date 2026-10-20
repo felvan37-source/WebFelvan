@@ -1,3 +1,4 @@
+
 // api/article.js: merender halaman artikel di server agar Google langsung melihat judul, deskripsi, dan isi artikel.
 const SITE = "https://www.felvancourse.online", GAS = "https://script.google.com/macros/s/AKfycbyMH2Tqm_eGNDB-V-EB6x9wMT1L59tOevuOICUpc-l-bu8bSw7BufMT1oJZrDK3hRe3kQ/exec", BRAND = "Felvan Course";
 function slugify(t){var s=String(t==null?"":t);try{s=s.normalize("NFD").replace(/[\u0300-\u036f]/g,"")}catch(e){}s=s.toLowerCase().replace(/&/g," dan ").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");if(s.length>80){s=s.slice(0,80);var k=s.lastIndexOf("-");if(k>30)s=s.slice(0,k);s=s.replace(/-+$/,"")}return s}
