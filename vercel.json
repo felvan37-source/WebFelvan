@@ -1,8 +1,18 @@
 {
   "rewrites": [
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
+    { "source": "/article/:slug", "destination": "/api/article?slug=:slug" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "redirects": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "source": "/",
+      "has": [
+        { "type": "query", "key": "v", "value": "ArticleDetail" },
+        { "type": "query", "key": "id", "value": "(?<aid>[A-Za-z0-9]+)" }
+      ],
+      "destination": "/article/artikel-:aid",
+      "permanent": true
     }
   ]
 }
