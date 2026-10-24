@@ -187,8 +187,8 @@ if(view==="ArticleDetail"&&urlParams.has("id")&&!document.querySelector('meta[na
     const canonicalLink = document.getElementById("canonicalLink");
 
     /* FELVAN-PATCH-MIC:START (jangan diedit di antara penanda) */
-    appFrame.setAttribute("allow", "autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; clipboard-write *; camera *; microphone *; geolocation *");
-    /* FELVAN-PATCH-MIC:END */
+appFrame.setAttribute("allow", "autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; clipboard-write *; camera *; microphone *; geolocation *");
+/* FELVAN-PATCH-MIC:END */
     appFrame.src = GAS + "?" + urlParams.toString();
 
     function updateBrowserURL(pageView, title, id = null) {
@@ -316,5 +316,31 @@ if(view==="ArticleDetail"&&urlParams.has("id")&&!document.querySelector('meta[na
     });
     window.addEventListener("appinstalled", function () { installBtn.style.display = "none"; });
   </script>
+<!-- FELVAN-PATCH-MICHOST:START (jangan diedit di antara penanda) -->
+<script>
+(function(){
+  var f=document.getElementById("app"),SR=window.SpeechRecognition||window.webkitSpeechRecognition,cur={};
+  function inApp(w){try{for(var i=0;i<6&&w;i++){if(f&&w===f.contentWindow)return true;if(w===w.parent)break;w=w.parent}}catch(e){}return false}
+  window.addEventListener("message",function(ev){
+    var d=ev.data;
+    if(!d||d.type!=="felvan-speech"||!ev.source||!inApp(ev.source))return;
+    var to=(ev.origin&&ev.origin!=="null")?ev.origin:"*";
+    function out(o){o.type="felvan-speech-evt";o.id=d.id;try{ev.source.postMessage(o,to)}catch(e){}}
+    if(d.op==="abort"){try{cur[d.id]&&cur[d.id].abort()}catch(e){}return}
+    if(d.op!=="start")return;
+    out({ev:"ack"});
+    if(!SR){out({ev:"error",error:"service-not-allowed"});out({ev:"end"});return}
+    Object.keys(cur).forEach(function(k){try{cur[k].abort()}catch(e){}});
+    var rc=new SR();cur[d.id]=rc;
+    rc.lang=d.lang||"en-US";rc.interimResults=!!d.interim;rc.maxAlternatives=d.max||1;rc.continuous=false;
+    rc.onstart=function(){out({ev:"start"})};
+    rc.onresult=function(e){var R=[],i,j,a;for(i=0;i<e.results.length;i++){a=[];for(j=0;j<e.results[i].length;j++)a.push(e.results[i][j].transcript);R.push(a)}out({ev:"result",results:R})};
+    rc.onerror=function(e){out({ev:"error",error:e.error})};
+    rc.onend=function(){delete cur[d.id];out({ev:"end"})};
+    try{rc.start()}catch(x){out({ev:"error",error:"not-allowed"});out({ev:"end"})}
+  });
+})();
+</script>
+<!-- FELVAN-PATCH-MICHOST:END -->
 </body>
 </html>
