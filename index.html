@@ -98,7 +98,7 @@
     <iframe
       id="app"
       title="Felvan Course System"
-      allow="autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; clipboard-write; camera; microphone; geolocation"
+      allow="autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; clipboard-write *; camera *; microphone *; geolocation *"
       allowfullscreen>
     </iframe>
   </div>
@@ -186,6 +186,9 @@ if(view==="ArticleDetail"&&urlParams.has("id")&&!document.querySelector('meta[na
     const seoDesc = document.getElementById("seoDesc");
     const canonicalLink = document.getElementById("canonicalLink");
 
+    /* FELVAN-PATCH-MIC:START (jangan diedit di antara penanda) */
+    appFrame.setAttribute("allow", "autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; clipboard-write *; camera *; microphone *; geolocation *");
+    /* FELVAN-PATCH-MIC:END */
     appFrame.src = GAS + "?" + urlParams.toString();
 
     function updateBrowserURL(pageView, title, id = null) {
