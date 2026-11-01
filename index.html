@@ -342,5 +342,42 @@ appFrame.setAttribute("allow", "autoplay *; encrypted-media *; picture-in-pictur
 })();
 </script>
 <!-- FELVAN-PATCH-MICHOST:END -->
+  <!-- Jembatan rekam suara Felvan: tempel sebelum penutup body halaman Vercel -->
+<script>
+(function () {
+  if (window.__fvRecBridge) return;
+  window.__fvRecBridge = 1;
+  var R = null;
+  function say(src, id, o) { try { o.type = 'felvan-rec-evt'; o.id = id; src.postMessage(o, '*'); } catch (e) {} }
+  function free() { if (R) { try { R.s.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {} R = null; } }
+  window.addEventListener('message', function (e) {
+    var d = e.data, h = '';
+    if (!d || d.type !== 'felvan-rec' || !e.source) return;
+    try { h = new URL(e.origin).hostname; } catch (x) {}
+    if (!/(^|\.)(googleusercontent|google)\.com$/.test(h)) return;
+    if (d.op === 'stop' || d.op === 'cancel') {
+      if (R && R.id === d.id) { R.cancel = d.op === 'cancel'; try { R.rec.stop(); } catch (x) { free(); } }
+      return;
+    }
+    if (d.op !== 'start') return;
+    say(e.source, d.id, { ev: 'ack' });
+    if (R) return say(e.source, d.id, { ev: 'error', error: 'busy' });
+    navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }).then(function (s) {
+      var rec = new MediaRecorder(s), ch = [], t0 = Date.now(), cap = Math.min(Number(d.max) || 600, 900);
+      R = { id: d.id, rec: rec, s: s, cancel: false };
+      rec.ondataavailable = function (v) { if (v.data && v.data.size) ch.push(v.data); };
+      rec.onstop = function () {
+        var c = R && R.cancel;
+        free();
+        if (c) say(e.source, d.id, { ev: 'cancelled' });
+        else say(e.source, d.id, { ev: 'done', blob: new Blob(ch, { type: rec.mimeType || 'audio/webm' }), sec: Math.round((Date.now() - t0) / 1000) });
+      };
+      rec.start(1000);
+      setTimeout(function () { if (R && R.rec === rec && rec.state !== 'inactive') rec.stop(); }, cap * 1000 + 2000);
+      say(e.source, d.id, { ev: 'started' });
+    }).catch(function (x) { free(); say(e.source, d.id, { ev: 'error', error: (x && x.name) || 'fail' }); });
+  });
+})();
+<\/script>
 </body>
 </html>
