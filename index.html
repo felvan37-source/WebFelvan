@@ -419,5 +419,28 @@ appFrame.setAttribute("allow", "autoplay *; encrypted-media *; picture-in-pictur
 })();
 </script>
 <!-- FELVAN-PATCH-RECBRIDGE:END -->
+<!-- FELVAN-PATCH-ZOOMHOST:START (jangan diedit di antara penanda) -->
+<script>
+(function(){
+  var f=document.getElementById("app"),K="fvZoomUser",b;
+  function inApp(w){try{for(var i=0;i<6&&w;i++){if(f&&w===f.contentWindow)return true;if(w===w.parent)break;w=w.parent}}catch(e){}return false}
+  function btn(on){
+    if(!b){b=document.createElement("button");b.textContent="Zoom di Web";
+      b.style.cssText="display:none;position:fixed;bottom:16px;left:16px;z-index:9999;padding:12px 18px;border:0;border-radius:24px;background:#2d8cff;color:#fff;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:pointer";
+      b.onclick=function(){window.open("/zoom.html","_blank")};document.body.appendChild(b)}
+    b.style.display=on?"block":"none"}
+  try{btn(!!JSON.parse(localStorage.getItem(K)||"null"))}catch(e){}
+  window.addEventListener("message",function(ev){
+    var d=ev.data;
+    if(!d||!ev.source||!inApp(ev.source))return;
+    if(d.type==="felvan-login"&&String(d.email||"").indexOf("@")>0){
+      try{localStorage.setItem(K,JSON.stringify({email:String(d.email),name:String(d.name||""),role:String(d.role||"")}))}catch(e){}
+      btn(true)}
+    else if(d.type==="felvan-logout"){try{localStorage.removeItem(K)}catch(e){}btn(false)}
+    else if(d.type==="felvan-zoom"){window.open("/zoom.html","_blank")}
+  });
+})();
+</script>
+<!-- FELVAN-PATCH-ZOOMHOST:END -->
 </body>
 </html>
