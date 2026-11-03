@@ -5,32 +5,73 @@
 <title>Zoom Kelas | Felvan Course</title>
 <style>
 html,body{margin:0;height:100%;background:#0f172a;color:#e2e8f0;font:15px system-ui,sans-serif}
-#bar{padding:16px;text-align:center}
-button{background:#f97316;color:#fff;border:0;border-radius:10px;padding:10px 16px;margin:4px;font-weight:700;cursor:pointer}
+#bar{padding:24px 16px;text-align:center}
+button{background:#f97316;color:#fff;border:0;border-radius:10px;padding:12px 20px;margin:6px;font-weight:700;font-size:15px;cursor:pointer}
 #zm{position:fixed;inset:0}
+#st{position:fixed;left:8px;bottom:8px;z-index:99;background:rgba(0,0,0,.75);color:#fff;padding:6px 10px;border-radius:8px;font-size:12px;max-width:85%;display:none}
 </style></head><body>
-<div id="bar">Memuat...</div><div id="zm"></div>
+<div id="bar">Memuat...</div><div id="zm"></div><div id="st"></div>
 <script src="https://source.zoom.us/6.10.0/zoom-meeting-embedded-6.10.0.min.js"></script>
 <script>
 var GAS="https://script.google.com/macros/s/AKfycbyMH2Tqm_eGNDB-V-EB6x9wMT1L59tOevuOICUpc-l-bu8bSw7BufMT1oJZrDK3hRe3kQ/exec";
-var bar=document.getElementById("bar"),zm=document.getElementById("zm"),usr=null;
+var bar=document.getElementById("bar"),zm=document.getElementById("zm"),st=document.getElementById("st"),usr=null,log=[];
 function say(t){bar.style.display="";bar.textContent=t}
+function note(t){log.push(t);st.style.display="block";st.textContent=log.slice(-3).join(" | ")}
+function msg(e){return (e&&(e.reason||e.message||e.type||e.name))||JSON.stringify(e)}
 try{usr=JSON.parse(localStorage.getItem("fvZoomUser")||"null")}catch(e){}
-function join(it){
-  bar.style.display="none";
-  var c=ZoomMtgEmbedded.createClient();
-  c.init({zoomAppRoot:zm,language:"en-US",patchJsMedia:true,customize:{video:{isResizable:true,viewSizes:{default:{width:window.innerWidth,height:window.innerHeight}}}}})
-  .then(function(){return c.join({signature:it.sig,meetingNumber:it.mn,password:it.pwd,userName:usr.name||"Siswa"})})
-  .catch(function(e){say("Gagal masuk: "+((e&&(e.reason||e.message))||JSON.stringify(e))+(e&&e.errorCode?" (kode "+e.errorCode+")":""))});
+
+function human(e){
+  var n=e&&e.name;
+  if(n==="NotAllowedError"||n==="SecurityError")return "Izin kamera/mikrofon ditolak. Klik ikon gembok atau kamera di address bar, pilih Izinkan, lalu refresh halaman ini.";
+  if(n==="NotFoundError")return "Kamera atau mikrofon tidak ditemukan di perangkat ini.";
+  if(n==="NotReadableError")return "Kamera atau mikrofon sedang dipakai aplikasi lain (Zoom desktop, Google Meet, dll). Tutup dulu, lalu coba lagi.";
+  return "Tidak bisa mengakses perangkat: "+msg(e);
 }
+function getMedia(c){return navigator.mediaDevices.getUserMedia(c).then(function(s){s.getTracks().forEach(function(t){t.stop()});return true})}
+// Meminta izin langsung di tab ini (dari klik tombol), agar browser menampilkan pertanyaan izin.
+function perm(){
+  if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia))return Promise.reject({name:"SecurityError"});
+  return getMedia({audio:true,video:true}).then(function(){return "AV"},function(e1){
+    return getMedia({audio:true}).then(function(){note("Kamera tidak tersedia, hanya audio");return "A"},function(){throw e1});
+  });
+}
+
+function afterJoin(c){
+  setTimeout(function(){
+    var ms=null;
+    try{ms=c.getMediaStream()}catch(e){note("MediaStream: "+msg(e));return}
+    ms.startAudio().then(function(){note("Audio aktif")},function(e){note("Audio gagal: "+msg(e)+" (klik Join Audio di toolbar)")})
+    .then(function(){
+      if(typeof ms.startVideo!=="function")return;
+      return ms.startVideo().then(function(){note("Video aktif")},function(e){note("Video gagal: "+msg(e)+" (klik Start Video di toolbar)")});
+    });
+  },2000);
+}
+
+function start(it){
+  say("Meminta izin kamera dan mikrofon...");
+  perm().then(function(){
+    bar.style.display="none";
+    note(window.crossOriginIsolated?"SharedArrayBuffer aktif":"SharedArrayBuffer tidak aktif");
+    var c=ZoomMtgEmbedded.createClient();
+    return c.init({zoomAppRoot:zm,language:"en-US",patchJsMedia:true,customize:{video:{isResizable:true,viewSizes:{default:{width:window.innerWidth,height:window.innerHeight}}}}})
+    .then(function(){return c.join({signature:it.sig,meetingNumber:it.mn,password:it.pwd,userName:usr.name||"Siswa"})})
+    .then(function(){note("Masuk meeting");afterJoin(c)});
+  }).catch(function(e){
+    var m=(e&&e.name&&!e.errorCode&&!e.reason)?human(e):"Gagal masuk: "+msg(e)+(e&&e.errorCode?" (kode "+e.errorCode+")":"");
+    say(m);
+  });
+}
+
 function show(d){
   if(!d||d.status!=="success"){say((d&&d.message)||"Gagal mengambil data Zoom.");return}
   var all=[];
   d.classes.forEach(function(c){c.list.forEach(function(z){z.label=c.name+(z.name?" - "+z.name:"");all.push(z)})});
-  if(all.length===1){join(all[0]);return}
-  bar.textContent="Pilih kelas:";
-  all.forEach(function(z){var b=document.createElement("button");b.textContent=z.label;b.onclick=function(){join(z)};bar.appendChild(b)});
+  bar.textContent="Halo "+(d.name||"")+". Pilih kelas lalu klik untuk bergabung:";
+  bar.appendChild(document.createElement("br"));
+  all.forEach(function(z){var b=document.createElement("button");b.textContent="Gabung: "+z.label;b.onclick=function(){start(z)};bar.appendChild(b)});
 }
+
 if(!usr||!usr.email){say("Login dulu di dashboard Felvan Course, lalu buka halaman ini lagi.")}
 else{
   say("Mengambil data Zoom...");
