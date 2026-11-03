@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Zoom Kelas | Felvan Course</title>
+<style>
+html,body{margin:0;height:100%;background:#0f172a;color:#e2e8f0;font:15px system-ui,sans-serif}
+#bar{padding:16px;text-align:center}
+button{background:#f97316;color:#fff;border:0;border-radius:10px;padding:10px 16px;margin:4px;font-weight:700;cursor:pointer}
+#zm{position:fixed;inset:0}
+</style></head><body>
+<div id="bar">Memuat...</div><div id="zm"></div>
+<script src="https://source.zoom.us/6.10.0/zoom-meeting-embedded-6.10.0.min.js"></script>
+<script>
+var GAS="https://script.google.com/macros/s/AKfycbyMH2Tqm_eGNDB-V-EB6x9wMT1L59tOevuOICUpc-l-bu8bSw7BufMT1oJZrDK3hRe3kQ/exec";
+var bar=document.getElementById("bar"),zm=document.getElementById("zm"),usr=null;
+function say(t){bar.style.display="";bar.textContent=t}
+try{usr=JSON.parse(localStorage.getItem("fvZoomUser")||"null")}catch(e){}
+function join(it){
+  bar.style.display="none";
+  var c=ZoomMtgEmbedded.createClient();
+  c.init({zoomAppRoot:zm,language:"en-US",patchJsMedia:true,customize:{video:{isResizable:true,viewSizes:{default:{width:window.innerWidth,height:window.innerHeight}}}}})
+  .then(function(){return c.join({signature:it.sig,meetingNumber:it.mn,password:it.pwd,userName:usr.name||"Siswa"})})
+  .catch(function(e){say("Gagal masuk: "+((e&&(e.reason||e.message))||JSON.stringify(e))+(e&&e.errorCode?" (kode "+e.errorCode+")":""))});
+}
+function show(d){
+  if(!d||d.status!=="success"){say((d&&d.message)||"Gagal mengambil data Zoom.");return}
+  var all=[];
+  d.classes.forEach(function(c){c.list.forEach(function(z){z.label=c.name+(z.name?" - "+z.name:"");all.push(z)})});
+  if(all.length===1){join(all[0]);return}
+  bar.textContent="Pilih kelas:";
+  all.forEach(function(z){var b=document.createElement("button");b.textContent=z.label;b.onclick=function(){join(z)};bar.appendChild(b)});
+}
+if(!usr||!usr.email){say("Login dulu di dashboard Felvan Course, lalu buka halaman ini lagi.")}
+else{
+  say("Mengambil data Zoom...");
+  fetch(GAS+"?api=zoomSign&email="+encodeURIComponent(usr.email)).then(function(r){return r.json()}).then(show).catch(function(e){say("Gagal terhubung: "+e)});
+}
+</script></body></html>
