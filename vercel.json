@@ -31,10 +31,7 @@
       "destination": "/article/artikel-:aid",
       "permanent": true
     }
-  ]
-}
-
-{
+  ],
   "headers": [
     {
       "source": "/zoom.html",
@@ -45,4 +42,3 @@
     }
   ]
 }
-
